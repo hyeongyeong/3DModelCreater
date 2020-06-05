@@ -4,7 +4,7 @@ bl_info = {
     "version": (0, 0, 1),
     "blender": (2, 80, 0),
     "location": "View3D",
-    "description": "Create Region Vertex group and insert eyes",
+    "description": "Create Region Vertex group",
     "warning": "",
     "wiki_url": "",
     "category": "Region",
@@ -18,6 +18,195 @@ from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
 import numpy as np
 from math import radians
+
+
+def delete_nose_hole(objs_data):
+    f= open(bpy.context.scene['file_path']['point'],"r")
+    my_object =objs_data
+    faces = my_object.vertices
+    iter =0
+
+
+    temp_x = []
+    temp_y = []
+    temp_z = []
+
+    temp_x2 = []
+    temp_y2 = []
+    temp_z2 = []
+
+    while True:
+        line = f.readline()
+
+        if not line:
+            break
+        split = line.split()
+        iter= iter+1
+
+        if iter ==23 or iter ==28:
+            temp_x2.append(float(split[0]))
+            temp_y2.append(float(split[1]))
+            temp_z2.append(float(split[2]))
+
+
+        if iter>=15 and iter<=20 :#eyebrow left 5媛�
+            temp_x.append(float(split[0]))
+            temp_y.append(float(split[1]))
+            temp_z.append(float(split[2]))
+
+    f.close()
+
+    temp_x[1]= temp_x2[0]
+    temp_x[5]= temp_x2[1]
+
+
+    temp1 = [[0]*3 for i in range(4)]
+    k=0
+    for i in range(0,2): #mouse
+        for j in range(0,2):
+            if(i==1):
+                j= 1-j
+
+            temp1[k][0] = temp_x[j+1]+ (temp_x[0]- temp_x[j+1])*((i+1)/3) 
+            temp1[k][1] = temp_y[j+1]+ (temp_y[0]- temp_y[j+1])*((i+1)/3)
+            temp1[k][2] = temp_z[j]
+            k=k+1
+
+    temp2 = [[0]*3 for i in range(4)]
+    k=0
+    for i in range(0,2): #mouse
+        for j in range(0,2):
+            if(i==1):
+                j=1-j
+
+            temp2[k][0] = temp_x[j+4]+ (temp_x[0]- temp_x[j+4])*((i+1)/3) 
+            temp2[k][1] = temp_y[j+4]+ (temp_y[0]- temp_y[j+4])*((i+1)/3)
+            temp2[k][2] = temp_z[j+4]
+            k=k+1
+
+    # for i in range(0,4):
+    #     bpy.ops.mesh.primitive_cube_add(location=(temp1[i][0], temp1[i][1], temp1[i][2]))
+    #     bpy.ops.mesh.primitive_cube_add(location=(temp2[i][0], temp2[i][1], temp2[i][2]))
+
+
+    bpy.ops.object.mode_set(mode = 'OBJECT') 
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    for fa in faces:
+        #isInside(f,mouse,12)
+        temp3 = []
+        temp3.append(fa.co.x)
+        temp3.append(fa.co.y)
+        temp3.append(fa.co.z)
+        
+        ans= main_Operator.isInside(temp3,temp1,4)
+        ans2= main_Operator.isInside(temp3,temp2,4)
+        if(ans or ans2):
+            fa.select=True
+
+    bpy.ops.object.mode_set(mode = 'EDIT')
+
+def isInside(aa,bb,cc):
+    crosses = 0
+    for i in range(0,cc):
+        j = (i+1)%cc
+        if((bb[i][1] > aa[1]) != (bb[j][1] > aa[1]) ):
+            atX = (bb[j][0]- bb[i][0])*(aa[1]-bb[i][1])/(bb[j][1]-bb[i][1])+bb[i][0]
+            if(aa[0] < atX):
+                crosses= crosses+1
+    return crosses % 2 > 0
+
+def select_nose_area(objs_data):
+    f= open(bpy.context.scene['file_path']['point'],"r")
+    my_object =objs_data
+    faces = my_object.vertices
+    iter =0
+    nose_x =[]
+    nose_y =[]
+    nose_z =[]
+
+    temp_x = []
+    temp_y = []
+    temp_z = []
+
+    while True:
+        line = f.readline()
+
+        if not line:
+            break
+        split = line.split()
+        iter= iter+1
+
+        if iter>=12 and iter<=20 :#eyebrow left 5媛�
+            nose_x.append(float(split[0]))
+            nose_y.append(float(split[1]))
+            nose_z.append(float(split[2]))
+
+        if iter==33 or iter == 39:
+            temp_x.append(float(split[0]))
+            temp_y.append(float(split[1]))
+            temp_z.append(float(split[2]))
+
+
+    f.close()
+    nose = [[0]*3 for i in range(6)]
+    j=0
+    for i in range(0,9): #mouse
+        if(i==0 or (i>=4 and i<=8)):
+            nose[j][0] =nose_x[i]
+            nose[j][1] =nose_y[i]
+            nose[j][2] =nose_z[i]
+            j=j+1
+
+    nose[1][0] = temp_x[0]
+    nose[5][0] = temp_x[1]
+
+    for i in range(0,3):
+        nose[i+2][1]= (nose[1][1]+nose[5][1])/2
+
+
+    temp_coord= [[0]*3 for i in range(6)]
+    j=0
+    for i in range(0,3):
+        temp_coord[i][0] = nose[1][0] + (nose[0][0] - nose[1][0])*((i+1)/4)
+        temp_coord[i][1] = nose[1][1] + (nose[0][1] - nose[1][1])*((i+1)/4)
+
+    for i in range(3,6):
+        temp_coord[i][0] = nose[0][0] + (nose[5][0] - nose[0][0])*((i-2)/4)
+        temp_coord[i][1] = nose[0][1] + (nose[5][1] - nose[0][1])*((i-2)/4)   
+
+    nose_re = [[0]*3 for i in range(12)]
+
+    nose_re[0] = nose[1]
+    for i in range(0,3):
+        nose_re[i+1]= temp_coord[i]
+
+    nose_re[4]= nose[0]
+    for i in range(3,6):
+        nose_re[i+2] = temp_coord[i]
+
+    for i in range(0,4):
+        nose_re[i+8] = nose[5-i]
+
+    bpy.ops.object.mode_set(mode = 'OBJECT') 
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    for fa in faces:
+        #isInside(f,mouse,12)
+        temp = []
+        temp.append(fa.co.x)
+        temp.append(fa.co.y)
+        temp.append(fa.co.z)
+        
+        ans= main_Operator.isInside(temp,nose_re,12)
+        if(ans):
+            fa.select=True
+
+    bpy.ops.object.mode_set(mode = 'EDIT')
 
 def curved_plane (self, context, coord):
     
@@ -50,103 +239,6 @@ def curved_plane (self, context, coord):
         bpy.ops.object.mode_set(mode = 'OBJECT')
     
     return plane
-
-def make_eye_material(path):
-    
-    loc = Vector((500,0))
-    difference = Vector((300,0))
-    
-    mat_name = "eye_material"
-    
-    mat = bpy.data.materials.new(mat_name)
-    mat.use_nodes = True    
-    nodes = mat.node_tree.nodes
-    
-    # handle default 
-    nodes.remove(nodes.get('Principled BSDF'))
-    material_output = nodes.get('Material Output')
-    
-    # make new nodes
-    diffuse = nodes.new('ShaderNodeBsdfDiffuse')
-    hue = nodes.new('ShaderNodeHueSaturation')
-    texImage = nodes.new('ShaderNodeTexImage')
-    texcoord = nodes.new('ShaderNodeTexCoord')
-    
-    node_pool = [diffuse, hue, texImage, texcoord]
-    
-    # edit location of nodes
-    material_output.location = loc
-    for p in node_pool:
-        loc = loc - difference
-        p.location = loc
-    
-    # load text file to texImage
-    try :
-        image = bpy.data.images.load(path)
-        texImage.image = image
-    except :
-        raise NameError("Cannot load image %s" % path)
-        
-    # link nodes
-    link = mat.node_tree.links
-    link.new(texcoord.outputs[0], texImage.inputs[0])
-    link.new(texImage.outputs[0],hue.inputs[4])
-    link.new(hue.outputs[0],diffuse.inputs[0])
-    link.new(material_output.inputs[0], diffuse.outputs[0])
-    
-    return mat
-
-def apply_eye_texture(eye_meshes, tex):
-    
-    mat = make_eye_material(tex)
-    
-    # link material to eye sphere
-    for ball in eye_meshes:
-        ball.select_set(True)
-        ball.active_material = mat
-        
-def optimize_eye_loc(coord):
-    coord_right = coord[0:6] # 2
-    coord_left = coord[6:12] # 1
-
-    scale = Vector((19,19,19))
-    rot = Vector((radians(15), radians(5), 0))
-
-    right = (coord_right[0].x  + scale.x , coord_right[2].y, (coord_right[2].z + coord_right[4].z)/2 - scale.z )
-    left = (coord_left[3].x - scale.x, coord_left[1].y, (coord_left[5].z + coord_left[1].z ) / 2 - scale.z)
-
-    eyes = np.array([right, left, scale, rot])
-    
-    return eyes
-
-def add_eyeball(self, context, coord, tex):
-    
-    eyes = []
-    
-    op = optimize_eye_loc(coord)
-    
-    right_loc = op[0]
-    left_loc = op[1]
-
-    scale_v = op[2]
-    rotation_v = op[3]
-    rot_dir = Vector((1,-1,1))
- 
-    loc = [right_loc, left_loc]
-     
-    for idx, eye in enumerate(loc) :
-        bpy.ops.mesh.primitive_uv_sphere_add(location=eye)
-        ball = bpy.context.selected_objects[0]
-        ball.scale = scale_v
-        eyes.append(ball)
-
-        if idx :   
-            ball.rotation_euler = rotation_v 
-        else :
-            ball.rotation_euler = rotation_v * rot_dir
-
-    
-    apply_eye_texture(eyes, tex)
     
 def add_plane(self, context, coord): 
     verts = []
@@ -307,140 +399,6 @@ def eye_brow_thickness(coord, direction):
         new_coord.append(v)
     
     return coord+ new_coord
-
-def make_curved_eye_plane(self,context, coord):
-    planes = []
-    
-    points = [coord[0:6], coord[6:12]]
-    
-    selected_edges = []
-    
-    subdivided_edges = []
-    subdivided_faces = []
-    
-    ebd = []
-    
-    right = [
-                {'idx': 29, 'edge': None, 'offset': 3.3, 'segments': 5},
-                {'idx': 26, 'edge': None, 'offset': 3.3, 'segments': 5},
-                {'idx': 23, 'edge': None, 'offset': 3.3, 'segments': 5},
-                {'idx': 20, 'edge': None, 'offset': 3.3, 'segments': 5},
-            ]
-    
-    left = [
-                {'idx': 26, 'edge': None, 'offset': 3.3, 'segments': 5},
-                {'idx': 29, 'edge': None, 'offset': 3.3, 'segments': 5},
-                {'idx': 32, 'edge': None, 'offset': 3.3, 'segments': 5},
-                {'idx': 18, 'edge': None, 'offset': 3.3, 'segments': 5},
-            ]
-    
-            
-    eye_bevel = [right, left]
-    
-    
-    for point_idx, p in enumerate(points):
-        point_len = len(p)
-        planes.append(add_plane(self,context, p))
-
-        obj = bpy.context.object
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        
-        #error handle
-        if obj.mode == 'EDIT' :
-            
-    #        subdivide edge
-            bm=bmesh.from_edit_mesh(obj.data)
-            
-            selected_edges = [edge for edge in bm.edges if edge.select]
-            bmesh.ops.subdivide_edges(bm, edges=selected_edges, cuts=1)
-            bmesh.update_edit_mesh(obj.data)
-            
-            bm.verts.ensure_lookup_table()
-            
-            for i, vert in enumerate(bm.verts):
-                vert.select_set(False)
-                if i==12 or i==14 or i==17 or i==20 or i==23 or i==26:
-                    vert.select_set(True)
-            
-            bpy.ops.mesh.delete(type='VERT')
-            
-            bm.verts.ensure_lookup_table()
-            
-            # subdivide face
-            v=bm.verts
-            for i in range(0,point_len):
-                if i == point_len - 1:
-                    subdivided_faces.append(bm.faces.new([v[i], v[2*i+2*point_len], v[2*i+2*point_len+1], v[i+point_len]]))
-                    subdivided_faces.append(bm.faces.new([v[2*i+2*point_len], v[i-point_len+1], v[i+1], v[2*i+2*point_len+1]]))
-                else:
-                    subdivided_faces.append(bm.faces.new([v[i], v[2*i+2*point_len], v[2*i+2*point_len+1], v[i+point_len]]))
-                    subdivided_faces.append(bm.faces.new([v[2*i+point_len*2], v[i+1], v[i+point_len+1], v[2*i+2*point_len+1]]))
-           
-            bmesh.update_edit_mesh(obj.data)
-            
-            bm.edges.ensure_lookup_table()
-            
-            ebd = eye_bevel[point_idx]
-            
-            # get the edges
-            for i in range(len(ebd)):
-                ebd[i]['edge'] = bm.edges[ebd[i]['idx']]
-            # bevel each edge
-            for i in range(len(ebd)):
-                e = ebd[i]['edge']
-                bev_geom = [e.verts[0], e.verts[1], e]
-                o = ebd[i]['offset']
-                s = ebd[i]['segments']
-                bmesh.ops.bevel(bm, geom=bev_geom, offset=o, segments=s,profile= 0.5,
-                vertex_only   = False,
-                clamp_overlap = False,
-                loop_slide    = True,
-                material      = -1,offset_type   = 'OFFSET',)
-
-            
-            bmesh.update_edit_mesh(obj.data)
-            bpy.ops.object.mode_set(mode = 'OBJECT')
-
-        else:
-            print("Object is not in edit mode.")
-            
-    
-    return planes
-
-class MESH_OT_add_eyes(Operator, AddObjectHelper):
-    """Create a new Mesh Object"""
-    bl_idname = "mesh.add_eyes"
-    bl_label = "Make Eye ball"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    
-    def execute(self, context):
-       
-        try :
-            # TODO : Error output when multiple targets
-            bpy.context.scene.cursor.location = (0,0,0)
-            planes = []
-            landmark_point_file_path = bpy.context.scene['file_path']['point']
-            eye_texture_path = bpy.context.scene['file_path']['eye_tex']
-
-            target = bpy.context.scene['my_obj']['ply']
-            
-            coord = file_read(landmark_point_file_path)
-            
-            eye_point = coord[20:32]
-
-            planes = make_curved_eye_plane(self, context, eye_point)
-
-            for p in planes :
-                # target , plane, operation, delete
-                apply_boolean(target, p , "DIFFERENCE", True)
-
-            add_eyeball(self, context, eye_point , eye_texture_path)
-            
-        except IndexError:
-            print("Please select target face mesh!")
-
-        return {'FINISHED'}
 
 class MESH_OT_create_region_group(Operator, AddObjectHelper):
     bl_idname = "mesh.create_region_group"

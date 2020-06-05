@@ -1,6 +1,6 @@
 import bpy
 
-class Test_PT_Panel(bpy.types.Panel):
+class Model_PT_Panel(bpy.types.Panel):
     bl_label = "Create Face Panel"
     bl_category = "Face"
     bl_space_type = "VIEW_3D"
@@ -10,4 +10,4 @@ class Test_PT_Panel(bpy.types.Panel):
         layout = self.layout
 
         row = layout.row()
-        row.operator('mesh.create_face_main',text= "create Face")
+        row.operator('mesh.create_model_main',text= "create Face")

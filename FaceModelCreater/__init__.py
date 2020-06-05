@@ -25,11 +25,11 @@ bl_info = {
 import bpy
 
 from . main import main_Operator
-from . test_panel import Test_PT_Panel
-from . createRegionGroup import MESH_OT_add_eyes
+from . mainPanel import Model_PT_Panel
 from . createRegionGroup import MESH_OT_create_region_group
-from .mouthCapacity import mouth_creation
+from . mouthCapacity import mouth_creation
+from . createEyes import MESH_OT_add_eyes
 
-classes = (main_Operator, Test_PT_Panel, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation)
+classes = (main_Operator, Model_PT_Panel, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation)
 
 register,unregister = bpy.utils.register_classes_factory(classes)
