@@ -1,0 +1,7 @@
+/FaceModelCreater/.vscode
+/FaceModelCreater/__pycache__
+
+/input/.vscode
+/input/__pycache__
+
+*.pyc
