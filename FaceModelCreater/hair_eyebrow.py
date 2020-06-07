@@ -29,7 +29,7 @@ class Hair_Eyebrow(bpy.types.Operator):
         return {'FINISHED'}      
 
     def styling(self, MODE):
-        
+
         head = self._select_obj("hee_f")
         option = {
             "mode":MODE,
@@ -43,6 +43,7 @@ class Hair_Eyebrow(bpy.types.Operator):
             "child":True,
             "physics":False,
             "static_scalp":True,
+            "proj_dir":True,
         }
 
         self._add_psys(option)
@@ -105,15 +106,15 @@ class Hair_Eyebrow(bpy.types.Operator):
         '''
         head = option["head"]
         psys = head.particle_systems[option["psys_name"]]
-        direct = 1 if option["mode"] == "eyebrow_l" else -1
+        direct = 1 if option["mode"] == "eye_brow_l" else -1
         for i in range(10000):            
             strand = []
             y_rand = random.randint(-10, 10)
             for m in range(100):
-                strand.append((i+11+m*m*direct/60,11+y_rand,(i-5000+m*8)+11))
+                strand.append((i/2+11+m*m*direct/120,i%2+11+y_rand,2*((5000-i)*(direct)+(360-(m-60)**2)/10)))
             full_hair.append(strand)
             
-            
+              
             
             
         v_scale, scalp_move, hair_move = self._hair_matching(option, full_hair, head)        
@@ -236,6 +237,18 @@ class Hair_Eyebrow(bpy.types.Operator):
         scalp_scale = scalp_scale/len(scalp)
     
         scale = [scalp_scale[i] / hair_scale[i] for i in range(3)]
+
+        if option["proj_dir"] == True:
+            max_v = 0
+            for point in scalp :
+                if max_v < point[2]:
+                    max_v = point[2]
+            scalp_m[2] = max_v
+
+        print(option["mode"])
+        print(scalp_m)
+        print(hair_m)
+        print(scale)
         return scale, scalp_m, hair_m
 
      
