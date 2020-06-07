@@ -29,7 +29,8 @@ from . mainPanel import Model_PT_Panel
 from . createRegionGroup import MESH_OT_create_region_group
 from . mouthCapacity import mouth_creation
 from . createEyes import MESH_OT_add_eyes
+from . hair_eyebrow import Hair_Eyebrow
 
-classes = (main_Operator, Model_PT_Panel, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation)
+classes = (main_Operator, Model_PT_Panel, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, Hair_Eyebrow)
 
 register,unregister = bpy.utils.register_classes_factory(classes)

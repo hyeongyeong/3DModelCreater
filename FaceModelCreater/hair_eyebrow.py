@@ -17,24 +17,13 @@ import mathutils
 from mathutils import Vector
 from mathutils.geometry import tessellate_polygon
 
-def add_cube(xyz, idx=1):
-    temp = bpy.context.active_object
-    size = 0.3
-    if idx == 0:
-        size = 0.1
-    bpy.ops.mesh.primitive_cube_add(location=(xyz[0], xyz[1], xyz[2]), size=size)
-    obj = bpy.context.active_object
-    bpy.context.scene.collection.objects.link(obj)
-    bpy.context.view_layer.objects.active = temp
-    
-class Eyebrow_Styler(bpy.types.Operator):
+class Hair_Eyebrow(bpy.types.Operator):
     """Eyebrow styler"""      
     bl_idname = "object.hair_eyebrow"
     bl_label = "eyebrow"
     bl_options = {'REGISTER', 'UNDO'} 
 
     def execute(self, context):       
-        print("da")        
         MODE = "eyebrow_l" # or "hair"
         head = self._select_obj("hee_f")
         option = {
