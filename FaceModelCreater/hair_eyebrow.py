@@ -19,18 +19,23 @@ from mathutils.geometry import tessellate_polygon
 
 class Hair_Eyebrow(bpy.types.Operator):
     """Eyebrow styler"""      
-    bl_idname = "object.hair_eyebrow"
-    bl_label = "eyebrow"
+    bl_idname = "mesh.hair_eyebrow"
+    bl_label = "add eyebrows"
     bl_options = {'REGISTER', 'UNDO'} 
 
-    def execute(self, context):       
-        MODE = "eyebrow_l" # or "hair"
+    def execute(self, context):
+        self.styling("eye_brow_l")
+        self.styling("eye_brow_r")
+        return {'FINISHED'}      
+
+    def styling(self, MODE):
+        
         head = self._select_obj("hee_f")
         option = {
             "mode":MODE,
             "head":head,
             "scalp_name":MODE,
-            "style_path":"/home/jhson/blender_hair/data/hairsalon/pickle/strands00002.pk",
+            "style_path":"",
             "material":self._select_material(head, "material_" + MODE),
             "psys_name":"auto_" + MODE,
             "num_particle": 1000,
@@ -39,26 +44,6 @@ class Hair_Eyebrow(bpy.types.Operator):
             "physics":False,
             "static_scalp":True,
         }
-        self.styling(option)
-        return {'FINISHED'}      
-
-    def do_hair_styling(self, head, scalp_name, style_path):
-        MODE = "eyebrow" # or "hair"
-        option = {
-            "head":head,
-            "scalp_name":scalp_name,
-            "style_path":style_path,
-            "material":self._select_material(head, "material_" + MODE),
-            "psys_name":"auto_" + MODE,
-            "num_particle": 100,
-            "hair_step":70,
-            "child":False,
-            "physics":False,
-            "static_scalp":True,
-        }
-        self.styling(option)        
-
-    def styling(self, option):
 
         self._add_psys(option)
         style = self._load_style(option)

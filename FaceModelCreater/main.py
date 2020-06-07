@@ -44,6 +44,5 @@ class main_Operator(bpy.types.Operator):
         bpy.ops.mesh.create_region_group()
         texturing(objs)
         bpy.ops.mesh.add_eyes()
-        
            
         return {'FINISHED'}

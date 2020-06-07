@@ -11,3 +11,6 @@ class Model_PT_Panel(bpy.types.Panel):
 
         row = layout.row()
         row.operator('mesh.create_model_main',text= "create Face")
+
+        row = layout.row()
+        row.operator('mesh.hair_eyebrow', text="add eyebrows")
