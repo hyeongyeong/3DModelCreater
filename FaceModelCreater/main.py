@@ -40,7 +40,7 @@ class main_Operator(bpy.types.Operator):
         objs = bpy.data.objects[model_file_name]
         objs_data = objs.data
 
-        bpy.ops.mesh.mouth()
+        #bpy.ops.mesh.mouth()
         bpy.ops.mesh.create_region_group()
         texturing(objs)
         bpy.ops.mesh.add_eyes()
