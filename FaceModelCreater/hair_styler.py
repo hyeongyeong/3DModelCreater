@@ -24,28 +24,25 @@ class Hair_styler(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'} 
 
     def execute(self, context):
-        # MODE = {eye_brow_l, eye_brow_r ... }
-        self.styling("eye_brow_l")
-        self.styling("eye_brow_r")
+        MODE = [
+                "eye_brow_l",
+                "eye_brow_r",
+                "mustache",
+                "beard",
+                "hair"
+                ]
+                
+        for mode in MODE:
+            print("Styling " + mode + " ....")
+            self.styling(mode)
+
+            
         return {'FINISHED'}      
 
     def styling(self, MODE):
 
         head = self._select_obj("hee_f")
-        option = {
-            "mode":MODE,
-            "head":head,
-            "scalp_name":MODE,
-            "style_path":"",
-            "material":self._select_material(head, "material_" + MODE),
-            "psys_name":"auto_" + MODE,
-            "num_particle": 500,
-            "hair_step":70,
-            "child":True,
-            "physics":False,
-            "static_scalp":True,
-            "proj_dir":True,
-        }
+        option = self._get_option(MODE, head)
 
         self._add_psys(option)
         style = self._load_style(option)
@@ -365,9 +362,91 @@ class Hair_styler(bpy.types.Operator):
             head.data.materials.append(mat_hair)
         return mat_hair
 
+    def _get_option(self, mode, head):
+        
+        ''' 
+            MODE list: "eye_brow_l", "eye_brow_r", "mustache", "beard", "hair"
+        '''
+        option = None
+        if mode =="eye_brow_l" or mode == "eye_brow_r":
+                
+            option = {
+                "mode":mode,
+                "head":head,
+                "scalp_name":mode,
+                "style_path":"",
+                "material":self._select_material(head, "material_" + mode),
+                "psys_name":"auto_" + mode,
+                "num_particle": 500,
+                "hair_step":40,
+                "child":True,
+                "physics":False,
+                "static_scalp":True,
+                "proj_dir":True,
+            }
+
+        elif mode == "mustache":
+                            
+            option = {
+                "mode":mode,
+                "head":head,
+                "scalp_name":mode,
+                "style_path":"",
+                "material":self._select_material(head, "material_" + mode),
+                "psys_name":"auto_" + mode,
+                "num_particle": 500,
+                "hair_step":40,
+                "child":True,
+                "physics":False,
+                "static_scalp":True,
+                "proj_dir":True,
+            }
+            
+        elif mode == "beard":
+                            
+            option = {
+                "mode":mode,
+                "head":head,
+                "scalp_name":mode,
+                "style_path":"",
+                "material":self._select_material(head, "material_" + mode),
+                "psys_name":"auto_" + mode,
+                "num_particle": 500,
+                "hair_step":40,
+                "child":True,
+                "physics":False,
+                "static_scalp":True,
+                "proj_dir":True,
+            }
+            
+        elif mode == "hair":
+                            
+            option = {
+                "mode":mode,
+                "head":head,
+                "scalp_name":mode,
+                "style_path":"",
+                "material":self._select_material(head, "material_" + mode),
+                "psys_name":"auto_" + mode,
+                "num_particle": 1000,
+                "hair_step":70,
+                "child":True,
+                "physics":False,
+                "static_scalp":True,
+                "proj_dir":True,
+            }
+            
+            
+        else:
+            print("[[ERR]] MODE error")
+            sys.exit(1)
+
+        return option
+
     def _data_load(self, option):
+        mode = option["mode"]
         full_hair = []
-        if option["mode"] == "eye_brow_l" or option["mode"] == "eye_brow_r":
+        if mode == "eye_brow_l" or mode == "eye_brow_r":
             direct = 1 if option["mode"] == "eye_brow_l" else -1
             for i in range(10000):            
                 strand = []
@@ -375,12 +454,42 @@ class Hair_styler(bpy.types.Operator):
                 for m in range(100):
                     strand.append((i/2+11+m*m*direct/40, i%2+11+y_rand + m*y_rand*0.001, 0.2*((5000-i)*(direct)+(360-(m-60)**2)/10)))
                 full_hair.append(strand)
-            
 
-        elif option["mode"] == "hair":
+        elif mode == "mustache":
+
+            for i in range(10000):            
+                strand = []
+                y_rand = random.randint(-10, 10)
+                for m in range(100):
+                    strand.append((i/2+11+m*m, i%2+11+y_rand + m*y_rand*0.001, 0.2*(360-(m-60)**2)/10))
+                full_hair.append(strand)
+            
+        elif mode == "beard":
+                            
+            for i in range(10000):            
+                strand = []
+                y_rand = random.randint(-10, 10)
+                for m in range(100):
+                    strand.append((i/2+11+m*m, i%2+11+y_rand + m*y_rand*0.001, 0.2*(360-(m-60)**2)/10))
+                full_hair.append(strand)
+            
+        elif mode == "hair":
+            '''
             pk_f = open(option["style_path"], "rb")
             full_hair = pickle.load(pk_f)
             #pk_f.close()
+            '''
+            for i in range(10000):            
+                strand = []
+                y_rand = random.randint(-10, 10)
+                for m in range(100):
+                    strand.append((i/2+11+m*m, i%2+11+y_rand + m*y_rand*0.001, 0.2*(360-(m-60)**2)/10))
+                full_hair.append(strand)
+
+        else:
+            print("[[ERR]] MODE error")
+            sys.exit(1)
+
 
         return full_hair
  
@@ -389,11 +498,11 @@ class Hair_styler(bpy.types.Operator):
 
 def register():
     
-    bpy.utils.register_class(Hair_Styler)
+    bpy.utils.register_class(Hair_styler)
 
 
 def unregister():
-    bpy.utils.unregister_class(Hair_Styler)
+    bpy.utils.unregister_class(Hair_styler)
 
 if __name__ == "__main__":
 
