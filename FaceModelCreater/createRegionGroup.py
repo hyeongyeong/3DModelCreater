@@ -281,11 +281,12 @@ def vertex_group_philtrum(objs_data,group_name):
 
     top = [[0]*3 for i in range(5)]
     bot = [[0]*3 for i in range(7)]
-    target_point = [[0]*3 for i in range(12)]
+    
 
     for i in range(0,5):
         top[i][0] = top_x[i]
-        top[i][1] = (top_y[0]*(2/3) + nose_top_y[0]*(1/3))
+        top[i][1] = (top_y[1]*4/5 + nose_top_y[0]*1/5) 
+        
         top[i][2] = top_z[i]
 
     for i in range(0,7):
@@ -293,15 +294,19 @@ def vertex_group_philtrum(objs_data,group_name):
         bot[i][1] = bot_y[0]
         bot[i][2] = bot_z[i]
 
-    for i in range(0,5):
-        target_point[i][0] =top[i][0]
-        target_point[i][1] =top[i][1]
-        target_point[i][2] =top[i][2]
 
-    for i in range(0,7):
-        target_point[i+5][0] =bot[6-i][0]
-        target_point[i+5][1] =bot[6-i][1]
-        target_point[i+5][2] =bot[6-i][2]
+    bot_point_y = top[2][1] * 1/5 + bot_y[3] *4/5
+    for fa in faces:
+        if(fa.co.x - top[2][0] < 1 and fa.co.x - top[2][0] > -1):
+            #if(fa.co.y< top[2][1] and fa.co.y >bot_y[3] ):
+            if(fa.co.y< top[2][1] and fa.co.y >bot_point_y ):
+                fa.select = True
+
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    vg=bpy.context.object.vertex_groups.new(name=group_name)
+    bpy.ops.object.vertex_group_assign()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bpy.ops.object.mode_set(mode = 'OBJECT')
 
 
 
@@ -540,8 +545,10 @@ def select_intersect_vertices(target, obj, group_name):
                 t.select = False
             
     vg=bpy.context.object.vertex_groups.new(name=group_name)
+
     bpy.ops.object.vertex_group_assign()
     
+    bpy.ops.mesh.remove_doubles(threshold=0.001)
     bpy.ops.object.mode_set(mode = 'OBJECT')    
 
 def duplicate_obj(target):
@@ -585,6 +592,7 @@ def create_region_group(self, context, target, coord, vertex_group_name):
     select_intersect_vertices(target, new_obj, vertex_group_name)
     
     delete_object(new_obj)
+    
 
 def eye_brow_thickness(coord, direction):
     
@@ -650,6 +658,9 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             mouthReion()
 
             # create vertex group of lips
+
+            vertex_group_philtrum(target.data,"philtrum")
+            
             create_region_group(self, context, target, lips_coord, "lips")
             create_region_group(self, context, target, eye_brow_right_coord, "eye_brow_r")
             create_region_group(self, context, target, eye_brow_left_coord, "eye_brow_l")
