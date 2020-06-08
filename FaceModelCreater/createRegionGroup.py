@@ -18,6 +18,7 @@ from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
 import numpy as np
 from math import radians
+from .mouthCapacity import SelectObjectsInBound
 
 
 def delete_nose_hole(objs_data):
@@ -218,6 +219,20 @@ def vertex_group_mustache_beard(objs_data,group_name, group_name2):
     bpy.ops.mesh.select_all(action = 'DESELECT')
     bpy.ops.object.mode_set(mode = 'OBJECT')
 
+def mouthReion(): 
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action = 'SELECT')
+    bpy.ops.mesh.region_to_loop()
+    #입 주변 바운더리 선택
+    #SelectObjectsInBound(Vector((-30.0893, 14.8183, -43.0942)), Vector((30.0893, 30.8558, -28.2911))) #이전의 박스.,
+    SelectObjectsInBound(Vector((-30.6703, -42.4804, -34.6092)), Vector((30.7703, -32.9558, -10.1496)))
+    
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    vg=bpy.context.object.vertex_groups.new(name="mouth_boundary")
+    bpy.ops.object.vertex_group_assign()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+    # TODO : vertex group 입 찢어진 부분 생성하기
 
 
 
@@ -561,6 +576,8 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             # Adding thickness to eye brow
             eye_brow_right_coord = eye_brow_thickness(eye_brow_right_coord, 1) # RIGHT
             eye_brow_left_coord = eye_brow_thickness(eye_brow_left_coord, -1) # LEFT
+
+            mouthReion()
 
             # create vertex group of lips
             create_region_group(self, context, target, lips_coord, "lips")
