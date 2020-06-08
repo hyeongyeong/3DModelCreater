@@ -101,8 +101,8 @@ def delete_nose_hole(objs_data):
         temp3.append(fa.co.y)
         temp3.append(fa.co.z)
         
-        ans= main_Operator.isInside(temp3,temp1,4)
-        ans2= main_Operator.isInside(temp3,temp2,4)
+        ans= isInside(temp3,temp1,4)
+        ans2= isInside(temp3,temp2,4)
         if(ans or ans2):
             fa.select=True
 
@@ -202,7 +202,7 @@ def select_nose_area(objs_data):
         temp.append(fa.co.y)
         temp.append(fa.co.z)
         
-        ans= main_Operator.isInside(temp,nose_re,12)
+        ans= isInside(temp,nose_re,12)
         if(ans):
             fa.select=True
 
@@ -362,6 +362,7 @@ def duplicate_obj(target):
     return new_obj
 
 def delete_object(target) :
+    
     bpy.ops.object.mode_set(mode = 'OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
     target.select_set(True) # Blender 2.8x
