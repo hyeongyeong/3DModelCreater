@@ -125,8 +125,8 @@ class Hair_styler(bpy.types.Operator):
         
         
         self._fit_proj(option, guide_hair, head, scalp_move)
-        #if option["mode"] == "hair":
-        #    self._local_fitting(option, guide_hair, head)
+        if option["mode"] == "hair":
+            self._local_fitting(option, guide_hair, head)
 
 
         guide_hair.sort(key=lambda strand:(strand[0][0], strand[0][1], strand[0],[2]))
@@ -231,19 +231,10 @@ class Hair_styler(bpy.types.Operator):
             for point in scalp :
                 if max_v < point[2]:
                     max_v = point[2]
-            scalp_m.append(max_v)
+            scalp_m.append(max_v*1.5)
+            scalp_m[2] = max_v
 
-        print(scalp_m)
-        print(option["mode"])
-        print(scale)
-        print("scalp")
-        print(scalp_scale)
-        print(scalp_m)
-        print("hair")
-        print(hair_scale)
-        print(hair_m)
-        
-
+    
         return scale, scalp_m, hair_m
 
      
@@ -553,7 +544,3 @@ def register():
 
 def unregister():
     bpy.utils.unregister_class(Hair_styler)
-
-if __name__ == "__main__":
-
-    register()
