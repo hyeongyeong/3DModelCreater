@@ -17,13 +17,14 @@ import mathutils
 from mathutils import Vector
 from mathutils.geometry import tessellate_polygon
 
-class Hair_Eyebrow(bpy.types.Operator):
-    """Eyebrow styler"""      
-    bl_idname = "mesh.hair_eyebrow"
-    bl_label = "add eyebrows"
+class Hair_styler(bpy.types.Operator):
+    """Hair styler"""      
+    bl_idname = "mesh.hair_styler"
+    bl_label = "add hair"
     bl_options = {'REGISTER', 'UNDO'} 
 
     def execute(self, context):
+        # MODE = {eye_brow_l, eye_brow_r ... }
         self.styling("eye_brow_l")
         self.styling("eye_brow_r")
         return {'FINISHED'}      
@@ -38,7 +39,7 @@ class Hair_Eyebrow(bpy.types.Operator):
             "style_path":"",
             "material":self._select_material(head, "material_" + MODE),
             "psys_name":"auto_" + MODE,
-            "num_particle": 1000,
+            "num_particle": 500,
             "hair_step":70,
             "child":True,
             "physics":False,
@@ -111,7 +112,7 @@ class Hair_Eyebrow(bpy.types.Operator):
             strand = []
             y_rand = random.randint(-10, 10)
             for m in range(100):
-                strand.append((i/2+11+m*m*direct/120,i%2+11+y_rand,2*((5000-i)*(direct)+(360-(m-60)**2)/10)))
+                strand.append((i/2+11+m*m*direct/40, i%2+11+y_rand + m*y_rand*0.001, 0.2*((5000-i)*(direct)+(360-(m-60)**2)/10)))
             full_hair.append(strand)
             
               
@@ -183,8 +184,8 @@ class Hair_Eyebrow(bpy.types.Operator):
             psys_name = option["psys_name"]
             psys = head.particle_systems[psys_name]
             psys.settings.child_type = "SIMPLE"
-            psys.settings.child_nbr = 10
-            psys.settings.rendered_child_count = 50
+            psys.settings.child_nbr = 4
+            psys.settings.rendered_child_count = 4
             psys.settings.child_length = 1.0
             psys.settings.child_length_threshold = 0.0
             psys.settings.child_radius = 2
@@ -245,10 +246,6 @@ class Hair_Eyebrow(bpy.types.Operator):
                     max_v = point[2]
             scalp_m[2] = max_v
 
-        print(option["mode"])
-        print(scalp_m)
-        print(hair_m)
-        print(scale)
         return scale, scalp_m, hair_m
 
      
@@ -384,11 +381,11 @@ class Hair_Eyebrow(bpy.types.Operator):
 
 def register():
     
-    bpy.utils.register_class(Eyebrow_Styler)
+    bpy.utils.register_class(Hair_Styler)
 
 
 def unregister():
-    bpy.utils.unregister_class(Eyebrow_Styler)
+    bpy.utils.unregister_class(Hair_Styler)
 
 if __name__ == "__main__":
 
