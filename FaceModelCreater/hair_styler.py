@@ -142,7 +142,8 @@ class Hair_styler(bpy.types.Operator):
         
         
         self._fit_proj(option, guide_hair, head, scalp_move)
-        #self._local_fitting(option, guide_hair, head)
+        if option["mode"] == "hair":
+            self._local_fitting(option, guide_hair, head)
 
 
         guide_hair.sort(key=lambda strand:(strand[0][0], strand[0][1], strand[0],[2]))
