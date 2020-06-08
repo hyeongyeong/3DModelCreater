@@ -234,6 +234,81 @@ def mouthReion():
     bpy.ops.object.mode_set(mode = 'OBJECT')
     # TODO : vertex group 입 찢어진 부분 생성하기
 
+def vertex_group_philtrum(objs_data,group_name):
+    f= open(bpy.context.scene['file_path']['point'],"r")
+    my_object =objs_data
+    faces = my_object.vertices
+    iter =0
+    
+    top_x = []
+    top_y = []
+    top_z = []
+
+    bot_x = []
+    bot_y = []
+    bot_z = []
+
+    nose_top_x =[]
+    nose_top_y =[]
+    nose_top_z =[]
+
+    while True:
+        line = f.readline()
+
+        if not line:
+            break
+        split = line.split()
+        
+        if iter ==14:
+            nose_top_x.append(float(split[0]))
+            nose_top_y.append(float(split[1]))
+            nose_top_z.append(float(split[2]))
+
+        if iter >=32 and iter <=38:
+            bot_x.append(float(split[0]))
+            bot_y.append(float(split[1]))
+            bot_z.append(float(split[2]))
+
+
+        if iter>=15 and iter<=19 :
+            top_x.append(float(split[0]))
+            top_y.append(float(split[1]))
+            top_z.append(float(split[2]))
+
+        iter= iter+1
+
+    f.close()
+
+    top = [[0]*3 for i in range(5)]
+    bot = [[0]*3 for i in range(7)]
+    
+
+    for i in range(0,5):
+        top[i][0] = top_x[i]
+        top[i][1] = (top_y[1]*4/5 + nose_top_y[0]*1/5) 
+        
+        top[i][2] = top_z[i]
+
+    for i in range(0,7):
+        bot[i][0] = bot_x[i]
+        bot[i][1] = bot_y[0]
+        bot[i][2] = bot_z[i]
+
+
+    bot_point_y = top[2][1] * 1/5 + bot_y[3] *4/5
+    for fa in faces:
+        if(fa.co.x - top[2][0] < 1 and fa.co.x - top[2][0] > -1):
+            #if(fa.co.y< top[2][1] and fa.co.y >bot_y[3] ):
+            if(fa.co.y< top[2][1] and fa.co.y >bot_point_y ):
+                fa.select = True
+
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    vg=bpy.context.object.vertex_groups.new(name=group_name)
+    bpy.ops.object.vertex_group_assign()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+
 
 
 def isInside(aa,bb,cc):
@@ -470,8 +545,10 @@ def select_intersect_vertices(target, obj, group_name):
                 t.select = False
             
     vg=bpy.context.object.vertex_groups.new(name=group_name)
+
     bpy.ops.object.vertex_group_assign()
     
+    bpy.ops.mesh.remove_doubles(threshold=0.001)
     bpy.ops.object.mode_set(mode = 'OBJECT')    
 
 def duplicate_obj(target):
@@ -515,6 +592,7 @@ def create_region_group(self, context, target, coord, vertex_group_name):
     select_intersect_vertices(target, new_obj, vertex_group_name)
     
     delete_object(new_obj)
+    
 
 def eye_brow_thickness(coord, direction):
     
@@ -580,6 +658,9 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             mouthReion()
 
             # create vertex group of lips
+
+            vertex_group_philtrum(target.data,"philtrum")
+            
             create_region_group(self, context, target, lips_coord, "lips")
             create_region_group(self, context, target, eye_brow_right_coord, "eye_brow_r")
             create_region_group(self, context, target, eye_brow_left_coord, "eye_brow_l")
@@ -626,14 +707,9 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
                     idx_must = idx_must+1
                     vg_vertex.append(v)
            
-            #bpy.ops.mesh.select_all(action = 'DESELECT')
+           
 
-            for v in bm.verts:
-                # if(v.co.y< nose_top_y[0]):
-                #     for g in vg_vertex:                      
-                #         if np.array_equal(v.co, g.co):
-                #             v.select = True
-                #             break      
+            for v in bm.verts:      
                 if(v.co.y< nose_top_y[0]):
                     if v.select:    
                         for t in vg_vertex2:
@@ -716,15 +792,8 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
                     idx_beard = idx_beard+1
                     vg_vertex.append(v)
            
-            #bpy.ops.mesh.select_all(action = 'DESELECT')
-
-
+           
             for v in bm.verts:
-                # if(v.co.y< nose_top_y[0]):
-                #     for g in vg_vertex:               
-                #         if np.array_equal(v.co, g.co):
-                #             v.select = True
-                #             break
                 if(v.co.y< nose_top_y[0]):
                     if v.select:
                         for t in vg_vertex2:
