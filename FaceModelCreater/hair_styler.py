@@ -97,25 +97,11 @@ class Hair_styler(bpy.types.Operator):
 
     def _load_style(self, option):
 
-        full_hair = []
         guide_hair = []
-        '''
-        pk_f = open(option["style_path"], "rb")
-        full_hair = pickle.load(pk_f)
-        #pk_f.close()
-
-        '''
         head = option["head"]
         psys = head.particle_systems[option["psys_name"]]
-        direct = 1 if option["mode"] == "eye_brow_l" else -1
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-10, 10)
-            for m in range(100):
-                strand.append((i/2+11+m*m*direct/40, i%2+11+y_rand + m*y_rand*0.001, 0.2*((5000-i)*(direct)+(360-(m-60)**2)/10)))
-            full_hair.append(strand)
-            
-              
+        full_hair = self._data_load(option)
+
             
             
         v_scale, scalp_move, hair_move = self._hair_matching(option, full_hair, head)        
@@ -378,7 +364,28 @@ class Hair_styler(bpy.types.Operator):
             mat_hair.diffuse_color = (0.01, 0.01, 0.01, 0)
             head.data.materials.append(mat_hair)
         return mat_hair
-    
+
+    def _data_load(self, option):
+        full_hair = []
+        if option["mode"] == "eye_brow_l" or option["mode"] == "eye_brow_r":
+            direct = 1 if option["mode"] == "eye_brow_l" else -1
+            for i in range(10000):            
+                strand = []
+                y_rand = random.randint(-10, 10)
+                for m in range(100):
+                    strand.append((i/2+11+m*m*direct/40, i%2+11+y_rand + m*y_rand*0.001, 0.2*((5000-i)*(direct)+(360-(m-60)**2)/10)))
+                full_hair.append(strand)
+            
+
+        elif option["mode"] == "hair":
+            pk_f = open(option["style_path"], "rb")
+            full_hair = pickle.load(pk_f)
+            #pk_f.close()
+
+        return full_hair
+ 
+              
+
 
 def register():
     
