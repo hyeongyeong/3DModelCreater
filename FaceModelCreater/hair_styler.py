@@ -25,11 +25,11 @@ class Hair_styler(bpy.types.Operator):
 
     def execute(self, context):
         MODE = [
-                "eye_brow_l",
                 "eye_brow_r",
-                "mustache",
-                "beard",
-                "hair"
+                #"mustache",
+                "eye_brow_l",
+                #"beard",
+                #"hair"
                 ]
                 
         for mode in MODE:
@@ -125,8 +125,8 @@ class Hair_styler(bpy.types.Operator):
         
         
         self._fit_proj(option, guide_hair, head, scalp_move)
-        if option["mode"] == "hair":
-            self._local_fitting(option, guide_hair, head)
+        #if option["mode"] == "hair":
+        #    self._local_fitting(option, guide_hair, head)
 
 
         guide_hair.sort(key=lambda strand:(strand[0][0], strand[0][1], strand[0],[2]))
@@ -222,13 +222,27 @@ class Hair_styler(bpy.types.Operator):
         scalp_scale = scalp_scale/len(scalp)
     
         scale = [scalp_scale[i] / hair_scale[i] for i in range(3)]
-
+        
+        print(scalp_m)
+        scalp_m = list(scalp_m)
+        print(scalp_m)
         if option["proj_dir"] == True:
             max_v = 0
             for point in scalp :
                 if max_v < point[2]:
                     max_v = point[2]
-            scalp_m[2] = max_v
+            scalp_m.append(max_v)
+
+        print(scalp_m)
+        print(option["mode"])
+        print(scale)
+        print("scalp")
+        print(scalp_scale)
+        print(scalp_m)
+        print("hair")
+        print(hair_scale)
+        print(hair_m)
+        
 
         return scale, scalp_m, hair_m
 
@@ -336,7 +350,12 @@ class Hair_styler(bpy.types.Operator):
 
       
     def _move(self, point, hair_move, scalp_move, v_scale):
-        strand = Vector([ (point[j] - hair_move[j])*v_scale[j] + scalp_move[j] for j in range(3) ])
+
+        strand = Vector([ 
+                    (point[0] - hair_move[0])*v_scale[0] + scalp_move[0],
+                    (point[1] - hair_move[1])*v_scale[1] + scalp_move[1],
+                    (point[2] - hair_move[2])*v_scale[2] + scalp_move[3]
+                ])
         return strand      
 
     ############# utils #################
@@ -368,7 +387,24 @@ class Hair_styler(bpy.types.Operator):
             MODE list: "eye_brow_l", "eye_brow_r", "mustache", "beard", "hair"
         '''
         option = None
-        if mode =="eye_brow_l" or mode == "eye_brow_r":
+        if mode =="eye_brow_l":
+            
+            option = {
+                "mode":mode,
+                "head":head,
+                "scalp_name":mode,
+                "style_path":"",
+                "material":self._select_material(head, "material_" + mode),
+                "psys_name":"auto_" + mode,
+                "num_particle": 500,
+                "hair_step":10,
+                "child":True,
+                "physics":False,
+                "static_scalp":True,
+                "proj_dir":True,
+            }
+            
+        elif mode == "eye_brow_r":
                 
             option = {
                 "mode":mode,
@@ -378,7 +414,7 @@ class Hair_styler(bpy.types.Operator):
                 "material":self._select_material(head, "material_" + mode),
                 "psys_name":"auto_" + mode,
                 "num_particle": 500,
-                "hair_step":40,
+                "hair_step":10,
                 "child":True,
                 "physics":False,
                 "static_scalp":True,
@@ -394,9 +430,9 @@ class Hair_styler(bpy.types.Operator):
                 "style_path":"",
                 "material":self._select_material(head, "material_" + mode),
                 "psys_name":"auto_" + mode,
-                "num_particle": 500,
-                "hair_step":40,
-                "child":True,
+                "num_particle": 200,
+                "hair_step":10,
+                "child":False,
                 "physics":False,
                 "static_scalp":True,
                 "proj_dir":True,
@@ -412,8 +448,8 @@ class Hair_styler(bpy.types.Operator):
                 "material":self._select_material(head, "material_" + mode),
                 "psys_name":"auto_" + mode,
                 "num_particle": 500,
-                "hair_step":40,
-                "child":True,
+                "hair_step":10,
+                "child":False,
                 "physics":False,
                 "static_scalp":True,
                 "proj_dir":True,
@@ -429,7 +465,7 @@ class Hair_styler(bpy.types.Operator):
                 "material":self._select_material(head, "material_" + mode),
                 "psys_name":"auto_" + mode,
                 "num_particle": 1000,
-                "hair_step":70,
+                "hair_step":10,
                 "child":True,
                 "physics":False,
                 "static_scalp":True,
@@ -446,7 +482,18 @@ class Hair_styler(bpy.types.Operator):
     def _data_load(self, option):
         mode = option["mode"]
         full_hair = []
-        if mode == "eye_brow_l" or mode == "eye_brow_r":
+        if mode == "eye_brow_l":
+                        
+            direct = 1 if option["mode"] == "eye_brow_l" else -1
+            for i in range(10000):            
+                strand = []
+                y_rand = random.randint(-10, 10)
+                for m in range(100):
+                    strand.append((i/2+11+m*m*direct/40, i%2+11+y_rand + m*y_rand*0.001, ((5000-i)*(direct)+(360-(m-60)**2)/10)))
+                full_hair.append(strand)
+
+        elif mode == "eye_brow_r":
+            
             direct = 1 if option["mode"] == "eye_brow_l" else -1
             for i in range(10000):            
                 strand = []
@@ -460,8 +507,9 @@ class Hair_styler(bpy.types.Operator):
             for i in range(10000):            
                 strand = []
                 y_rand = random.randint(-10, 10)
+                length = random.uniform(0.9, 1.0)
                 for m in range(100):
-                    strand.append((i/2+11+m*m, i%2+11+y_rand + m*y_rand*0.001, 0.2*(360-(m-60)**2)/10))
+                    strand.append((i/2+11, i%2+11+y_rand+(m*y_rand*0.001-m*m)*(1e-5), length*(1+(360-(m-60)**2)*(1e-7))  ))
                 full_hair.append(strand)
             
         elif mode == "beard":
@@ -469,8 +517,9 @@ class Hair_styler(bpy.types.Operator):
             for i in range(10000):            
                 strand = []
                 y_rand = random.randint(-10, 10)
+                length = random.uniform(0.9, 1.0)
                 for m in range(100):
-                    strand.append((i/2+11+m*m, i%2+11+y_rand + m*y_rand*0.001, 0.2*(360-(m-60)**2)/10))
+                    strand.append((i/2+11, i%2+11+y_rand+(m*y_rand*0.001-m*m)*(1e-5), length*(1+(360-(m-60)**2)*(1e-7))  ))
                 full_hair.append(strand)
             
         elif mode == "hair":
@@ -482,8 +531,9 @@ class Hair_styler(bpy.types.Operator):
             for i in range(10000):            
                 strand = []
                 y_rand = random.randint(-10, 10)
+                length = random.uniform(0.9, 1.0)
                 for m in range(100):
-                    strand.append((i/2+11+m*m, i%2+11+y_rand + m*y_rand*0.001, 0.2*(360-(m-60)**2)/10))
+                    strand.append((0,0,0))
                 full_hair.append(strand)
 
         else:
