@@ -4,7 +4,6 @@ import random
 
 import bpy
 from mathutils import Vector
-from mathutils.geometry import tessellate_polygon
 
 
 #############################################################################

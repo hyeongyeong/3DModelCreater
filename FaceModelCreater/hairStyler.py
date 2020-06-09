@@ -5,7 +5,8 @@ import math
 import mathutils
 
 from . hairUtils import *
-
+from mathutils import Vector
+from mathutils.geometry import tessellate_polygon
 
 
 bl_info = {
@@ -96,10 +97,9 @@ class Hair_styler(bpy.types.Operator):
 
     def fitting_proj(self, option, guide_hair, head, coord_scalp):
         root_hair = [Vector(strand[0]) for strand in guide_hair]
-        scalp_idx = head.vertex_groups[option["scalp_name"]].index
-        scalp_tris = []
+        scalp_tris = self.get_scalp_tris(option, head)
         
-        
+
 
 
         for idx, root in enumerate(root_hair):
@@ -107,10 +107,10 @@ class Hair_styler(bpy.types.Operator):
             ray = root - coord_scalp
             tri = None
             for tri in scalp_tris:
-                if mathutils.geometry.intersect_ray_tri(tri[0], tri[1], tri[2], ray, scalp_center) != None:
+                if mathutils.geometry.intersect_ray_tri(tri[0], tri[1], tri[2], ray, coord_scalp) != None:
                     intersected = True
                     break
-            
+    
             if intersected == False:
                 nearest_idx = find_nearest_point(root, scalp_tris)
                 tri = scalp_tris[nearest_idx]
@@ -119,9 +119,36 @@ class Hair_styler(bpy.types.Operator):
             for v in range(len(guide_hair[idx])):            
                 guide_hair[idx][v] = Vector([ guide_hair[idx][v][i] - root[i] + center[i] for i in range(3) ])
 
-
-
         return 
+
+    def get_scalp_tris(self, option, head):
+        scalp_tris = []
+        scalp_idx = head.vertex_groups[option["scalp_name"]].index
+
+        for poly in head.data.polygons:
+            all_include = True
+            for v_idx in poly.vertices:
+                v = head.data.vertices[v_idx]
+                is_include = False
+                for g in v.groups:
+                    if g.group == scalp_idx:
+                        is_include = True
+                        break
+                
+                if is_include == False:
+                    all_include = False
+                    break
+
+            if all_include == True:
+                polygon = [head.data.vertices[vi].co for vi in poly.vertices]
+                normal = [head.data.vertices[vi].normal for vi in poly.vertices]
+                if (option["mode"] == "eye_brow_r" or option["mode"] == "eye_brow_l") and test_normal_dir(normal) == False:
+                    continue
+                tess = tessellate_polygon((polygon,))
+                scalp_tris = [ [polygon[tri[0]],polygon[tri[1]], polygon[tri[2]]] for tri in tess ]
+
+
+        return scalp_tris
 
     def get_coord(self, obj):
         # Guided hair scaling
