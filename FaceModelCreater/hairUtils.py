@@ -237,8 +237,15 @@ def transform(point, hair_move, scalp_move, v_scale):
             ])
     return point
 
+def get_center(tri, gitter=False):
 
-
+    if gitter == False:
+        return [ (tri[0][i]+tri[1][i]+tri[2][i])/3 for i in range(3) ] # add jitter
+    else:
+        a = random.randint(1, 5)
+        b = random.randint(1, 5)
+        c = random.randint(1, 5)   
+        return [ (tri[0][i]*a+tri[1][i]*b+tri[2][i]*c)/(a+b+c) for i in range(3) ] # add jitter
 
 
 #############################################################################

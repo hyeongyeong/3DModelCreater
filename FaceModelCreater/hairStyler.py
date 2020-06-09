@@ -1,6 +1,8 @@
 import bpy
 import sys
 import numpy
+import math
+import mathutils
 
 from . hairUtils import *
 
@@ -78,23 +80,50 @@ class Hair_styler(bpy.types.Operator):
         return guide_hair
 
     def get_transform(self, option, hair, head):
-        scalp_idx = head.vertex_groups[option["scalp_name"]].index
         root_hair = [Vector(strand[0]) for strand in hair]
         scalp = []
         for v in head.data.vertices :
             for g in v.groups :
-                if g.group == group_idx :
+                if g.group == head.vertex_groups[option["scalp_name"]].index :
                     scalp.append(v.co)
+        
 
         coord_hair, scale_hair = self.get_info(root_hair)
         coord_scalp, scale_scalp = self.get_info(scalp)
         scale = [scale_scalp[i]/scale_hair[i] for i in range(3)]
+
         return scale, coord_scalp, coord_hair
 
-    def fitting_proj(self, option, guide_hair, head, coor_scalp):
+    def fitting_proj(self, option, guide_hair, head, coord_scalp):
+        root_hair = [Vector(strand[0]) for strand in guide_hair]
+        scalp_idx = head.vertex_groups[option["scalp_name"]].index
+        scalp_tris = []
+        
+        
 
 
-    def get_coord(obj):
+        for idx, root in enumerate(root_hair):
+            intersected = False
+            ray = root - coord_scalp
+            tri = None
+            for tri in scalp_tris:
+                if mathutils.geometry.intersect_ray_tri(tri[0], tri[1], tri[2], ray, scalp_center) != None:
+                    intersected = True
+                    break
+            
+            if intersected == False:
+                nearest_idx = find_nearest_point(root, scalp_tris)
+                tri = scalp_tris[nearest_idx]
+
+            center = get_center(tri=tri, gitter=True)
+            for v in range(len(guide_hair[idx])):            
+                guide_hair[idx][v] = Vector([ guide_hair[idx][v][i] - root[i] + center[i] for i in range(3) ])
+
+
+
+        return 
+
+    def get_coord(self, obj):
         # Guided hair scaling
         coord = Vector((0.0, 0.0, 0.0))
         for data in obj:
