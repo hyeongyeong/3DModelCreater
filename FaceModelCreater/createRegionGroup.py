@@ -308,6 +308,38 @@ def vertex_group_philtrum(objs_data,group_name):
     bpy.ops.mesh.select_all(action = 'DESELECT')
     bpy.ops.object.mode_set(mode = 'OBJECT')
 
+def vertex_group_eyelashes(objs_data,group_name1,group_name2):
+
+    eye_left_array = bpy.context.scene['eyes'][str(0)]
+    eye_right_array = bpy.context.scene['eyes'][str(1)]
+    my_object =objs_data
+    faces = my_object.vertices       
+    
+    for i in eye_left_array:
+        eye = Vector(i)
+        for fa in faces:
+            if(eye.x == fa.co.x and eye.y == fa.co.y):
+                fa.select = True                      
+
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    vg=bpy.context.object.vertex_groups.new(name=group_name1)
+    bpy.ops.object.vertex_group_assign()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    for i in eye_right_array:
+        eye = Vector(i)
+        for fa in faces:
+            if(eye.x == fa.co.x and eye.y == fa.co.y):
+                fa.select = True                      
+
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    vg=bpy.context.object.vertex_groups.new(name=group_name2)
+    bpy.ops.object.vertex_group_assign()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+
 
 
 
@@ -532,14 +564,12 @@ def select_intersect_vertices(target, obj, group_name):
  
     obj_v = obj.data.vertices
     
-    i= 0
     for t in target_bm.verts:
         for o in obj_v:
             t.select = False
             if t.co.x == o.co.x and t.co.y == o.co.y and t.co.z == o.co.z :
                 t.select = True
                 verts.append(t.index)
-                i=i+1
                 break
             else:
                 t.select = False
@@ -665,7 +695,10 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             create_region_group(self, context, target, eye_brow_right_coord, "eye_brow_r")
             create_region_group(self, context, target, eye_brow_left_coord, "eye_brow_l")
             vertex_group_mustache_beard(target.data, "temp1","temp2")
+            vertex_group_eyelashes(target.data,"left_eyelashes","right_eyelashes")
+            
 
+            
             bpy.ops.object.mode_set(mode = 'EDIT')
             bpy.ops.object.vertex_group_set_active(group=str("lips"))
             bpy.ops.object.vertex_group_select()

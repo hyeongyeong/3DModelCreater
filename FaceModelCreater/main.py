@@ -16,6 +16,8 @@ class main_Operator(bpy.types.Operator):
         model_file_name = "hee_f-output"    
         bpy.context.scene['file_path'] = {}
         bpy.context.scene['my_obj'] = {}
+        bpy.context.scene['eyes'] = {}
+
         # bpy.context.scene['file_path']['point'] = os.getcwd() + "/input/model_point.txt"
         bpy.context.scene['file_path']['point'] = os.getcwd() + "/input/model_point_hee.txt"
         bpy.context.scene['file_path']['eye_tex'] = os.getcwd() + "/input/eyeball.jpg"
@@ -41,9 +43,10 @@ class main_Operator(bpy.types.Operator):
         objs_data = objs.data
 
         #bpy.ops.mesh.mouth()
-        bpy.ops.mesh.create_region_group()
-        texturing(objs)
         bpy.ops.mesh.add_eyes()
+        bpy.ops.mesh.create_region_group()
+        # texturing(objs)
+        
         
            
         return {'FINISHED'}
