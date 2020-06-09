@@ -17,6 +17,24 @@ import mathutils
 from mathutils import Vector
 from mathutils.geometry import tessellate_polygon
 
+def add_cube(xyz, idx=1):
+    temp = bpy.context.active_object
+    size = 0.1
+    if idx == 0:
+        size = 0.1
+    bpy.ops.mesh.primitive_cube_add(location=(xyz[0], xyz[1], xyz[2]), size=size)
+    obj = bpy.context.active_object
+    bpy.context.scene.collection.objects.link(obj)
+    bpy.context.view_layer.objects.active = temp
+
+def test_normal_up(normals):
+    aver = 0
+    for n in normals:
+        if n[2] < 0.2:
+            return False
+    
+    return True
+
 class Hair_styler(bpy.types.Operator):
     """Hair styler"""      
     bl_idname = "mesh.hair_styler"
@@ -31,7 +49,7 @@ class Hair_styler(bpy.types.Operator):
                 #"beard",
                 #"hair"
                 ]
-                
+        print(MODE)
         for mode in MODE:
             print("Styling " + mode + " ....")
             self.styling(mode)
@@ -223,18 +241,19 @@ class Hair_styler(bpy.types.Operator):
     
         scale = [scalp_scale[i] / hair_scale[i] for i in range(3)]
         
-        print(scalp_m)
         scalp_m = list(scalp_m)
-        print(scalp_m)
         if option["proj_dir"] == True:
             max_v = 0
+            min_v = 100000000
             for point in scalp :
                 if max_v < point[2]:
                     max_v = point[2]
-            scalp_m.append(max_v*1.5)
-            scalp_m[2] = max_v
-
+                if min_v > point[2]:
+                    min_v = point[2]
+            scalp_m.append( max_v )
+            scale.append( (max_v-min_v)/(scalp_m[2]-min_v) )
     
+        print(scale)
         return scale, scalp_m, hair_m
 
      
@@ -259,6 +278,9 @@ class Hair_styler(bpy.types.Operator):
                         break
                 if all_include == True:
                     polygon = [head.data.vertices[vi].co for vi in poly.vertices]
+                    normal = [head.data.vertices[vi].normal for vi in poly.vertices]
+                    if test_normal_up(normal) == False:
+                        continue
                     tess = tessellate_polygon((polygon,))
                     for tri in tess:
                         scalp_tris.append( [ polygon[tri[0]], polygon[tri[1]], polygon[tri[2]] ] )
@@ -266,6 +288,7 @@ class Hair_styler(bpy.types.Operator):
         else:
             for poly in head.data.polygons:
                 scalp_tris.append( [head.data.vertices[v].co for v in poly.vertices] )
+                print("??")
         for strand in guided_hair:
             root.append(strand[0])            
         for idx, p in enumerate(root):
@@ -345,7 +368,7 @@ class Hair_styler(bpy.types.Operator):
         strand = Vector([ 
                     (point[0] - hair_move[0])*v_scale[0] + scalp_move[0],
                     (point[1] - hair_move[1])*v_scale[1] + scalp_move[1],
-                    (point[2] - hair_move[2])*v_scale[2] + scalp_move[3]
+                    (point[2] - hair_move[2])*v_scale[2] + scalp_move[2]
                 ])
         return strand      
 
@@ -480,7 +503,10 @@ class Hair_styler(bpy.types.Operator):
                 strand = []
                 y_rand = random.randint(-10, 10)
                 for m in range(100):
-                    strand.append((i/2+11+m*m*direct/40, i%2+11+y_rand + m*y_rand*0.001, ((5000-i)*(direct)+(360-(m-60)**2)/10)))
+                    x = i/4+11 + m*m*direct/100
+                    y = (10000-i)*i/(6*6) + i%6 + (1e-4*m+1)*y_rand 
+                    z = 0.2*((5000-i)*(direct)+(360-(m-60)**2)/10)
+                    strand.append((x,y,z))
                 full_hair.append(strand)
 
         elif mode == "eye_brow_r":
@@ -490,7 +516,10 @@ class Hair_styler(bpy.types.Operator):
                 strand = []
                 y_rand = random.randint(-10, 10)
                 for m in range(100):
-                    strand.append((i/2+11+m*m*direct/40, i%2+11+y_rand + m*y_rand*0.001, 0.2*((5000-i)*(direct)+(360-(m-60)**2)/10)))
+                    x = i/4+11 + m*m*direct/100
+                    y = (10000-i)*i/(6*6) + i%6 + (1e-4*m+1)*y_rand 
+                    z = 0.2*((5000-i)*(direct)+(360-(m-60)**2)/10)
+                    strand.append((x,y,z))
                 full_hair.append(strand)
 
         elif mode == "mustache":
@@ -544,3 +573,6 @@ def register():
 
 def unregister():
     bpy.utils.unregister_class(Hair_styler)
+    
+if __name__ == "__main__":
+    register()
