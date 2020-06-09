@@ -5,6 +5,7 @@ import numpy as np
 from .faceTexturing import texturing 
 from .merge import *
 from .createRegionGroup import duplicate_obj
+from mathutils import Matrix
 
 class main_Operator(bpy.types.Operator):
     bl_idname =  "mesh.create_model_main"
@@ -38,7 +39,7 @@ class main_Operator(bpy.types.Operator):
 
 
         objs = bpy.data.objects
-            
+
         bpy.ops.import_mesh.ply(filepath=bpy.context.scene['file_path']['face'])
         bpy.ops.object.shade_smooth()
 
@@ -58,17 +59,43 @@ class main_Operator(bpy.types.Operator):
         body_objs = bpy.data.objects[body_file_name]
         body_objs_data = body_objs.data
         
-        align(objs)
+
+        store_boundary_loop(objs)
+
+        bpy.ops.mesh.mouth()
+
+
+
+
+        bpy.ops.mesh.create_region_group()
+        
+        bpy.ops.mesh.add_eyes()
+
+
+        #transformation reset #################################
+        
+        tongue = bpy.data.objects["tongue_lowres_Mesh.001"]
+        teeth1 = bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"]
+        teeth2 = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]
+        eye1 = bpy.data.objects["Sphere"]
+        eye2 = bpy.data.objects["Sphere.001"]
+        reset_transform(objs)
+        reset_transform(tongue)
+        reset_transform(teeth1)
+        reset_transform(teeth2)
+        reset_transform(eye1)
+        reset_transform(eye2)
+        
+        align_matrix = icp()
+        align(objs,align_matrix)
+        align(tongue, align_matrix)
+        align(teeth1, align_matrix)
+        align(teeth2, align_matrix)
+        align(eye1, align_matrix)
+        align(eye2, align_matrix)
+        
         merge(objs, body_objs)
-
-
-        # bpy.ops.mesh.mouth()
-        # bpy.ops.mesh.create_region_group()
-        # texturing(objs)
-        # bpy.ops.mesh.add_eyes()
         
-       
-        
-        
+        texturing(objs)
         
         return {'FINISHED'}
