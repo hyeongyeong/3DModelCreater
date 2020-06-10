@@ -219,7 +219,7 @@ def find_nearest_point(root, scalp_tris):
     min_idx = 0
     min_v = 10000000000
     for i, tri in enumerate(scalp_tris):
-        center = Vector([ (tri[0][i]+tri[1][i]+tri[2][i])/3 for i in range(3) ]) # add jitter    
+        center = Vector([ (tri[0][i]+tri[1][i]+tri[2][i])/3 for i in range(3) ])    
         dis = (root-center).length
         if dis < min_v:
             min_v = dis
@@ -338,9 +338,9 @@ def utils_select_material(head, mat_name):
 
 def add_cube(xyz, idx=1):
     temp = bpy.context.active_object
-    size = 0.1
+    size = 0.5
     if idx == 0:
-        size = 0.1
+        size = 0.2
     bpy.ops.mesh.primitive_cube_add(location=(xyz[0], xyz[1], xyz[2]), size=size)
     obj = bpy.context.active_object
     bpy.context.scene.collection.objects.link(obj)

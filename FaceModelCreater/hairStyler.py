@@ -34,7 +34,7 @@ class Hair_styler(bpy.types.Operator):
     def execute(self, context):
 
         for mode in self.STYLER_MODE:
-            print("[[INFO]] Styling Hair system : MODE [%s] .... ")
+            print("[[INFO]] Styling Hair system : MODE [%s] .... " % mode)
             self.do_styling(mode)
 
         return {"FINISHED"}
@@ -68,14 +68,13 @@ class Hair_styler(bpy.types.Operator):
                 continue
 
             for i in range(len(selected)):
-                selected[i] = transform(selected, coord_hair, coord_scalp, scale)
+                selected[i] = transform(selected[i], coord_hair, coord_scalp, scale)
 
             guide_strand = [selected[0]]
             for step in step_idx:
                 guide_strand.append(selected[step])
-            guide_strand[selected[99]]
+            guide_strand.append(selected[99])
             guide_hair.append(guide_strand)
-
         self.fitting_proj(option, guide_hair, head, coord_scalp)
         guide_hair.sort(key=lambda strand:(strand[0][0], strand[0][1], strand[0],[2]))
         return guide_hair
@@ -86,11 +85,13 @@ class Hair_styler(bpy.types.Operator):
         for v in head.data.vertices :
             for g in v.groups :
                 if g.group == head.vertex_groups[option["scalp_name"]].index :
+                    if (option["mode"] == "eye_brow_r" or option["mode"] == "eye_brow_l") and v.normal[2] <= 0.2:
+                        continue
                     scalp.append(v.co)
         
 
-        coord_hair, scale_hair = self.get_info(root_hair)
-        coord_scalp, scale_scalp = self.get_info(scalp)
+        coord_hair, scale_hair = self.get_coord(root_hair)
+        coord_scalp, scale_scalp = self.get_coord(scalp)
         scale = [scale_scalp[i]/scale_hair[i] for i in range(3)]
 
         return scale, coord_scalp, coord_hair
@@ -99,9 +100,6 @@ class Hair_styler(bpy.types.Operator):
         root_hair = [Vector(strand[0]) for strand in guide_hair]
         scalp_tris = self.get_scalp_tris(option, head)
         
-
-
-
         for idx, root in enumerate(root_hair):
             intersected = False
             ray = root - coord_scalp
@@ -114,6 +112,7 @@ class Hair_styler(bpy.types.Operator):
             if intersected == False:
                 nearest_idx = find_nearest_point(root, scalp_tris)
                 tri = scalp_tris[nearest_idx]
+
 
             center = get_center(tri=tri, gitter=True)
             for v in range(len(guide_hair[idx])):            
@@ -138,15 +137,14 @@ class Hair_styler(bpy.types.Operator):
                 if is_include == False:
                     all_include = False
                     break
-
             if all_include == True:
                 polygon = [head.data.vertices[vi].co for vi in poly.vertices]
                 normal = [head.data.vertices[vi].normal for vi in poly.vertices]
                 if (option["mode"] == "eye_brow_r" or option["mode"] == "eye_brow_l") and test_normal_dir(normal) == False:
                     continue
                 tess = tessellate_polygon((polygon,))
-                scalp_tris = [ [polygon[tri[0]],polygon[tri[1]], polygon[tri[2]]] for tri in tess ]
-
+                for tri in tess:
+                    scalp_tris.append([polygon[tri[0]], polygon[tri[1]], polygon[tri[2]]])
 
         return scalp_tris
 
@@ -210,7 +208,6 @@ class Hair_styler(bpy.types.Operator):
 
 
 def register():
-    
     bpy.utils.register_class(Hair_styler)
 
 
