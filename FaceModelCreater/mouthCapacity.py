@@ -188,6 +188,12 @@ class mouth_creation(Operator,AddObjectHelper ):
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
+        #bpy.ops.object.mode_set(mode = 'EDIT')    
+        #bpy.ops.mesh.select_all(action='DESELECT')
+        #bpy.ops.object.vertex_group_set_active(group=str("mouth_boundary"))
+        #bpy.ops.object.vertex_group_select()
+        #print('qqqzz',bpy.context.scene['my_obj']['ply'].vertex_groups['mouth_boundary'])
+        
         file_loc = bpy.context.scene['file_path']['mouth_cavity'] 
         bpy.ops.import_scene.obj(filepath=file_loc)
         #구강 선택 후 바운더리 따기
@@ -195,8 +201,15 @@ class mouth_creation(Operator,AddObjectHelper ):
         bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
         bpy.data.objects["models.001"].select_set(True)
         bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action = 'SELECT')
+        #bpy.ops.mesh.select_all(action = 'DESELECT')
+        bpy.context.object.vertex_groups.new(name="mouth_cavity_boundary")
         bpy.ops.mesh.region_to_loop()
+        #bpy.context.object.vertex_groups.new(name="mouth_cavity_boundary")
+        bpy.ops.object.vertex_group_assign()
+
+
+
+        
         obj = bpy.context.active_object
         cloc,cind = sort_endpoints(obj)     #mouth cavity의 좌표와 인덱스들 저장(처음 로드됬을때의 위치정보)
         del(cind)
@@ -207,15 +220,21 @@ class mouth_creation(Operator,AddObjectHelper ):
         bpy.context.view_layer.objects.active = bpy.context.scene['my_obj']['ply']
         bpy.context.scene['my_obj']['ply'].select_set(True)
         bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.mesh.region_to_loop()
+        bpy.ops.object.vertex_group_set_active(group=str("mouth_boundary"))
+        bpy.ops.object.vertex_group_select()
+        #bpy.ops.mesh.loop_multi_select(ring = False)
+        ##bpy.ops.mesh.region_to_loop()
         #입 주변 바운더리 선택
         #SelectObjectsInBound(Vector((-30.0893, 14.8183, -43.0942)), Vector((30.0893, 30.8558, -28.2911))) #이전의 박스.,
-        SelectObjectsInBound(Vector((-30.6703, -42.4804, -34.6092)), Vector((30.7703, -32.9558, -10.1496))) # 일정 영역 내의 정점만 선택 
+        #SelectObjectsInBound(Vector((-30.6703, -42.4804, -34.6092)), Vector((30.7703, -32.9558, -10.1496))) # 일정 영역 내의 정점만 선택 
         #bpy.ops.transform.translate(value=(0.0, -1.17, 0.0), orient_type='GLOBAL')
+
+        #bpy.context.scene['my_obj']['ply'].vertex_groups['mouth_boundary']
+        bpy.ops.object.mode_set(mode = 'OBJECT')
         selected_verts_indices = [v.index for v in bpy.context.active_object.data.vertices if v.select]
         for i in selected_verts_indices:
             bpy.context.scene['my_obj']['ply'].data.vertices[i].co[2] -= 1.17
+           
 
 
         bpy.ops.object.mode_set(mode = 'EDIT')
@@ -243,8 +262,9 @@ class mouth_creation(Operator,AddObjectHelper ):
         bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
         bpy.data.objects["models.001"].select_set(True)
         bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.mesh.region_to_loop()
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.vertex_group_set_active(group=str("mouth_cavity_boundary"))
+        bpy.ops.object.vertex_group_select()
         obj = bpy.context.active_object
         cloc_revised,cind_revised = sort_endpoints(obj)
         del(cind_revised)
@@ -288,8 +308,9 @@ class mouth_creation(Operator,AddObjectHelper ):
         bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
         bpy.data.objects["models.001"].select_set(True)
         bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.mesh.region_to_loop()
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.vertex_group_set_active(group=str("mouth_cavity_boundary"))
+        bpy.ops.object.vertex_group_select()
         obj = bpy.context.active_object
         cloc_revised_2,cind_revised_2 = sort_endpoints(obj)
         del(cloc_revised_2)
@@ -429,15 +450,19 @@ class mouth_creation(Operator,AddObjectHelper ):
         bpy.context.scene['my_obj']['ply'].select_set(True)
 
         bpy.ops.object.join()
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.context.object.vertex_groups.new(name="mouth_cavity_boundary")
+
 
         #boundary loop 선택
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_mode(type="VERT")
-        bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.mesh.region_to_loop()
-        SelectObjectsInBound(Vector((-30.6703, -42.4804, -34.6092)), Vector((30.7703, -32.9558, -10.1496)))
-        bpy.ops.object.mode_set(mode = 'EDIT')
-
+        bpy.ops.object.mode_set(mode = 'EDIT')    
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.vertex_group_set_active(group=str("mouth_boundary"))
+        bpy.ops.object.vertex_group_select()
+        bpy.ops.mesh.loop_multi_select(ring = False)
+        bpy.ops.object.vertex_group_set_active(group=str("mouth_cavity_boundary"))
+        bpy.ops.object.vertex_group_select()
+       
         bpy.ops.mesh.bridge_edge_loops()
         
         
