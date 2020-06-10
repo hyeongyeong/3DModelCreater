@@ -126,7 +126,7 @@ def load_preset(option):
             for m in range(100):
                 x = i/4+11 + m*m*direct/100
                 y = (10000-i)*i/(6*6) + i%6 + (1e-4*m+1)*y_rand*m
-                z = 0.2*((5000-i)*(direct)+(9-(m-3)**2)/100)
+                z = ((i)**2)*(-1)*1e-1+(1600-(m-40)**2)*1e+2
                 strand.append((x,y,z))
             full_hair.append(strand)
 
@@ -139,7 +139,7 @@ def load_preset(option):
             for m in range(100):
                 x = i/4+11 + m*m*direct/100
                 y = (10000-i)*i/(6*6) + i%6 + (1e-4*m+1)*y_rand*m 
-                z = 0.2*((5000-i)*(direct)+(9-(m-3)*2)/100)
+                z = ((10000-i)**2)*(-1)*1e-1+(1600-(m-40)**2)*1e+2
                 strand.append((x,y,z))
             full_hair.append(strand)
 
