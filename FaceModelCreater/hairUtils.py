@@ -1,9 +1,11 @@
 
 import sys
 import random
-
+import pickle
+import os
 import bpy
 from mathutils import Vector
+from mathutils.geometry import area_tri, normal
 
 
 #############################################################################
@@ -21,14 +23,14 @@ def get_styling_option(STYLER_MODE, head):
             "style_path":"",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
-            "num_particle": 300,
+            "num_particle": 150,
             "hair_step":14,
             "physics":False,
             "static_scalp":True,
             "proj_dir":True,
             
             # Child
-            "child":True,
+            "child":False,
             "child_radius":3
     }
 
@@ -39,14 +41,14 @@ def get_styling_option(STYLER_MODE, head):
             "style_path":"",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
-            "num_particle": 500,
+            "num_particle": 150,
             "hair_step":14,
             "physics":False,
             "static_scalp":True,
             "proj_dir":True,
             
             # Child
-            "child":True,
+            "child":False,
             "child_radius":3
                 
     }
@@ -115,10 +117,15 @@ def get_styling_option(STYLER_MODE, head):
 
 
 def load_preset(option):
+    
+    with open(option["style_path"], "rb") as fp:
+        full_hair = pickle.load(fp)
+    random.shuffle(full_hair)
+    return full_hair
+    '''
     mode = option["mode"]
     full_hair = []
     if mode == "eye_brow_l":
-                    
         direct = 1 if option["mode"] == "eye_brow_l" else -1
         for i in range(10000):            
             strand = []
@@ -131,7 +138,6 @@ def load_preset(option):
             full_hair.append(strand)
 
     elif mode == "eye_brow_r":
-        
         direct = 1 if option["mode"] == "eye_brow_l" else -1
         for i in range(10000):            
             strand = []
@@ -164,11 +170,6 @@ def load_preset(option):
             full_hair.append(strand)
         
     elif mode == "hair":
-        '''
-        pk_f = open(option["style_path"], "rb")
-        full_hair = pickle.load(pk_f)
-        #pk_f.close()
-        '''
         for i in range(10000):            
             strand = []
             y_rand = random.randint(-10, 10)
@@ -181,11 +182,8 @@ def load_preset(option):
         print("[[ERR]] MODE error")
         sys.exit(1)
 
-    random.shuffle(full_hair)
     return full_hair
-
-
-
+    '''
 
 #############################################################################
 ###################### Graphics Tools #######################################
@@ -239,12 +237,12 @@ def transform(point, hair_move, scalp_move, v_scale):
 def get_center(tri, gitter=False):
 
     if gitter == False:
-        return [ (tri[0][i]+tri[1][i]+tri[2][i])/3 for i in range(3) ] # add jitter
+        return Vector([ (tri[0][i]+tri[1][i]+tri[2][i])/3 for i in range(3) ]) # add jitter
     else:
         a = random.randint(1, 5)
         b = random.randint(1, 5)
         c = random.randint(1, 5)   
-        return [ (tri[0][i]*a+tri[1][i]*b+tri[2][i]*c)/(a+b+c) for i in range(3) ] # add jitter
+        return Vector([ (tri[0][i]*a+tri[1][i]*b+tri[2][i]*c)/(a+b+c) for i in range(3) ]) # add jitter
 
 
 #############################################################################
@@ -345,3 +343,75 @@ def add_cube(xyz, idx=1):
     obj = bpy.context.active_object
     bpy.context.scene.collection.objects.link(obj)
     bpy.context.view_layer.objects.active = temp
+
+def generate_style(option, scalp_tris=None, num_root=700, num_vtx=100):
+    mode = option["mode"]
+    path_store=os.getcwd()+"/FaceModelCreater/backup/%s.pk" % (mode)
+    fp = open(path_store, "wb")
+    roots = []
+    normals = []
+    total_area = 0.0
+    min_x, max_x = 1000000000, 0
+    for tri in scalp_tris:
+        total_area += area_tri(tri[0], tri[1], tri[2]) 
+        for p in tri:
+            if p[0] < min_x:
+                min_x = p[0]
+            if p[0] > max_x:
+                max_x = p[0]
+    root_per_area = num_root/total_area
+    
+    if mode == "eye_brow_l":
+        force = Vector((100, -9.8, -50))
+        length = (max_x-min_x)/(num_vtx*10)
+    elif mode == "eye_brow_r":
+        force = Vector((-100, -9.8, -50))
+        length = (max_x-min_x)/(num_vtx*10)
+    elif mode == "mustache":
+        force = Vector((0, -98, -15))
+        length = (max_x-min_x)/(num_vtx*10)
+    elif mode == "beard":
+        force = Vector((0, -98, -15))
+        length = (max_x-min_x)/(num_vtx*10)
+    else:
+        force = Vector((0,0,0))
+    force.normalize()
+    print(length)
+
+    for tri in scalp_tris:
+        num = int(root_per_area * area_tri(tri[0], tri[1], tri[2]))
+        num = 1 if num == 0 else num
+        for _ in range(num):
+            roots.append( get_center(tri, gitter=True) )
+            normals.append( normal(tri) )
+
+    print("num root: %d" % len(roots))
+    
+    guide_hair = []
+    for i, root in enumerate(roots):
+        n = normals[i]
+        strand = [root]
+        for m in range(1, num_vtx):
+            prev = strand[-1]
+            dir = (n + force*(m))
+            dir.normalize()
+            dir = random.uniform(0.6,1.0)*length*dir
+            strand.append(prev + dir)
+
+        guide_hair.append(strand)
+    random.shuffle(guide_hair)
+
+
+    for i, strand in enumerate(guide_hair):
+        for m, v in enumerate(strand):
+            guide_hair[i][m] = list(v)
+    pickle.dump(guide_hair, fp)
+    fp.close()
+    return guide_hair
+
+def print_style(num_style, style=None):
+    path_store=os.getcwd()+"/input/eye_brow_l_%2d.pk" % (num_style)
+    fp = open(path_store, "wb")
+
+    fp.close()
+    

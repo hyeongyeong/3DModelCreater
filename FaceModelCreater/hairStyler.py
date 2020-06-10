@@ -25,8 +25,8 @@ class Hair_styler(bpy.types.Operator):
     STYLER_MODE = [
         "eye_brow_r",
         "eye_brow_l",
-        #"mustache",
-        #"beard",
+        "mustache",
+        "beard",
         #"hair"
     ]
     NAME_HEAD = "hee_f"
@@ -45,7 +45,10 @@ class Hair_styler(bpy.types.Operator):
         head = utils_select_obj(target=self.NAME_HEAD)
         option = get_styling_option(STYLER_MODE, head)
         utils_add_particle_system(option)
-        preset = load_preset(option)
+        if option["style_path"] != "":
+            preset = load_preset(option)
+        else:
+            preset = generate_style(option, scalp_tris=self.get_scalp_tris(option, head)) # TODO
 
         style = self.generate_custom_style(option, preset)
         self.init_styling(option)
