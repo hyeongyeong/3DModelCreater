@@ -24,8 +24,8 @@ class Hair_styler(bpy.types.Operator):
         
     STYLER_MODE = [
         "eye_brow_r",
-        #"mustache",
         "eye_brow_l",
+        #"mustache",
         #"beard",
         #"hair"
     ]
