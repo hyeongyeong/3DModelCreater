@@ -45,7 +45,6 @@ def print_vert_details(selected_verts):
 def get_vertex_data(object_reference):
     bm = bmesh.from_edit_mesh(object_reference.data)
     selected_verts = [vert for vert in bm.verts if vert.select]
-    #print(selected_verts)
     print_vert_details(selected_verts)
 
 #오브젝트 정점 중 해당 인덱스의 정점을 선택(edit mode)
@@ -61,9 +60,7 @@ def select_by_index(index1,index2):
 
 #특정 영역 내 vertex 존재 유무 판단
 def IsInBoundingVectors(vector_check, vector1, vector2):
-#    print(vector_check[0])
     for i in range(0, 3):
-#        print(vector_check[i],vector1[i])
         if ((vector_check[i] < vector1[i] and vector_check[i] < vector2[i])
             or (vector_check[i] > vector1[i] and vector_check[i] > vector2[i])):
             return False  
@@ -171,9 +168,9 @@ def sort_upperLips(sortedvertices,object_reference,context):
     
 
     if (max(ycord_even)>max(ycord_odd)) & (min(ycord_even)>max(ycord_odd)):
-        print('correct')
+        print('do not move lip boundary')
     elif (max(ycord_odd)>max(ycord_even)) & (min(ycord_odd)>max(ycord_even)):
-        print('correct')
+        print('do not move lip boundary')
     else:
         move_lip(arry_even,arry_odd,object_reference)  
 
@@ -188,11 +185,6 @@ class mouth_creation(Operator,AddObjectHelper ):
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self, context):
-        #bpy.ops.object.mode_set(mode = 'EDIT')    
-        #bpy.ops.mesh.select_all(action='DESELECT')
-        #bpy.ops.object.vertex_group_set_active(group=str("mouth_boundary"))
-        #bpy.ops.object.vertex_group_select()
-        #print('qqqzz',bpy.context.scene['my_obj']['ply'].vertex_groups['mouth_boundary'])
         
         file_loc = bpy.context.scene['file_path']['mouth_cavity'] 
         bpy.ops.import_scene.obj(filepath=file_loc)
@@ -201,10 +193,8 @@ class mouth_creation(Operator,AddObjectHelper ):
         bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
         bpy.data.objects["models.001"].select_set(True)
         bpy.ops.object.mode_set(mode = 'EDIT')
-        #bpy.ops.mesh.select_all(action = 'DESELECT')
         bpy.context.object.vertex_groups.new(name="mouth_cavity_boundary")
         bpy.ops.mesh.region_to_loop()
-        #bpy.context.object.vertex_groups.new(name="mouth_cavity_boundary")
         bpy.ops.object.vertex_group_assign()
 
 
@@ -222,14 +212,6 @@ class mouth_creation(Operator,AddObjectHelper ):
         bpy.ops.object.mode_set(mode = 'EDIT')
         bpy.ops.object.vertex_group_set_active(group=str("mouth_boundary"))
         bpy.ops.object.vertex_group_select()
-        #bpy.ops.mesh.loop_multi_select(ring = False)
-        ##bpy.ops.mesh.region_to_loop()
-        #입 주변 바운더리 선택
-        #SelectObjectsInBound(Vector((-30.0893, 14.8183, -43.0942)), Vector((30.0893, 30.8558, -28.2911))) #이전의 박스.,
-        #SelectObjectsInBound(Vector((-30.6703, -42.4804, -34.6092)), Vector((30.7703, -32.9558, -10.1496))) # 일정 영역 내의 정점만 선택 
-        #bpy.ops.transform.translate(value=(0.0, -1.17, 0.0), orient_type='GLOBAL')
-
-        #bpy.context.scene['my_obj']['ply'].vertex_groups['mouth_boundary']
         bpy.ops.object.mode_set(mode = 'OBJECT')
         selected_verts_indices = [v.index for v in bpy.context.active_object.data.vertices if v.select]
         for i in selected_verts_indices:
@@ -244,7 +226,6 @@ class mouth_creation(Operator,AddObjectHelper ):
         
         
         sortedvertices = sorted(mind, key=lambda x: x[0])       #x좌표 기준을 정렬된 정점들
-        #print(sortedvertices)
         object_reference = bpy.context.active_object
         sort_upperLips(sortedvertices,object_reference,context)
         
@@ -318,7 +299,6 @@ class mouth_creation(Operator,AddObjectHelper ):
         # rot하기 위한 pivot 변경 
         bpy.ops.object.mode_set(mode = 'OBJECT')
         save_loc = bpy.context.scene.cursor.location    #현재 커서 위치 저장
-        print(save_loc,'<---original pivot')
         vec = mind[mloc.index(min(mloc))] + mind[mloc.index(max(mloc))]
         bpy.context.scene.cursor.location = vec/2
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
@@ -358,10 +338,8 @@ class mouth_creation(Operator,AddObjectHelper ):
         v2 = v_m - v_o
         a1 = v2.angle(v1)   #radian 값
 
-        print('this!!!!',a1*180/3.141592)
         if(a1> 0.785398):
             a1 =  3.141592/2 - a1 
-            print('this!!!!',a1*180/3.141592)
 
 
     
@@ -370,27 +348,20 @@ class mouth_creation(Operator,AddObjectHelper ):
         bpy.data.objects["models.001"].select_set(True)
         default_ang = bpy.context.object.rotation_euler
         angle = default_ang[0]-a1
-        print('default_ang[0]',default_ang[0])
-        #bpy.context.object.rotation_euler[0] = default_ang[0]-a1
         bpy.context.object.rotation_euler[0] = angle
-        #bpy.context.object.rotation_euler[0] = 3.141592/2
-        print(bpy.context.object.rotation_euler[0])
         bpy.context.view_layer.objects.active = bpy.data.objects['Lower_jaw_teeth_Lower_jaw_teeth.001']
         bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"].select_set(True)
-        #bpy.context.object.rotation_euler[0] = default_ang[0]-a1
         bpy.context.object.rotation_euler[0] = angle
         
-        print(bpy.context.object.rotation_euler[0])
         bpy.context.view_layer.objects.active = bpy.data.objects['tongue_lowres_Mesh.001']
         bpy.data.objects["tongue_lowres_Mesh.001"].select_set(True)
         #bpy.context.object.rotation_euler[0] = default_ang[0]-a1
         bpy.context.object.rotation_euler[0] = angle
-        print(bpy.context.object.rotation_euler[0])
+        
         bpy.context.view_layer.objects.active = bpy.data.objects['Upper_jaw_teeth_Upper_jaw_teeth.001']
         bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"].select_set(True)
         #bpy.context.object.rotation_euler[0] = default_ang[0]-a1
         bpy.context.object.rotation_euler[0] = angle
-        print(bpy.context.object.rotation_euler[0])
 
 
         #구강 메시가 튀어나오는 부분이 생겨서 뒤로 민다, 임의값 1만큼
