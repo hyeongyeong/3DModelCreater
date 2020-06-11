@@ -37,6 +37,7 @@ class main_Operator(bpy.types.Operator):
         bpy.ops.mesh.add_eyes()
         bpy.ops.mesh.create_region_group()
         bpy.ops.mesh.apply_texturing()
+        bpy.ops.mesh.nostrill()
         bpy.ops.mesh.mouth()
         
         

@@ -181,7 +181,7 @@ def get_feature_point():
 
 
 class nostril(Operator, AddObjectHelper):
-    bl_idname = "mesh.songdae"
+    bl_idname = "mesh.nostrill"
     bl_label = "nostril"
     bl_options = {'REGISTER', 'UNDO'}
     def execute(self, context):
