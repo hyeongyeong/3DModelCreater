@@ -29,8 +29,16 @@ from . mainPanel import Model_PT_Panel
 from . createRegionGroup import MESH_OT_create_region_group
 from . mouthCapacity import mouth_creation
 from . createEyes import MESH_OT_add_eyes
+<<<<<<< HEAD
 from . hairStyler import Hair_styler
 
 classes = (main_Operator, Model_PT_Panel, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, Hair_styler)
+=======
+from . nostril import nostril
+from . faceTexturing import MESH_OT_apply_texturing
+
+classes = (main_Operator, Model_PT_Panel, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, nostril, MESH_OT_apply_texturing)
+
+>>>>>>> 736e950386bb1428f9d594310ef929f4394abeae
 
 register,unregister = bpy.utils.register_classes_factory(classes)

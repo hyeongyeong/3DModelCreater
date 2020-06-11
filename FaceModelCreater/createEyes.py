@@ -110,6 +110,7 @@ def add_eyeball(self, context, coord, tex):
      
     for idx, eye in enumerate(loc) :
         bpy.ops.mesh.primitive_uv_sphere_add(location=eye)
+        bpy.ops.object.shade_smooth()
         ball = bpy.context.selected_objects[0]
         ball.scale = scale_v
         eyes.append(ball)
@@ -274,8 +275,16 @@ def make_curved_eye_plane(self,context, coord):
                 clamp_overlap = False,
                 loop_slide    = True,
                 material      = -1,offset_type   = 'OFFSET',)
-
             
+            curved_eye_vertex_group = []
+            
+
+            for vert in bm.verts:
+                curved_eye_vertex_group.append(vert.co)
+
+            bpy.context.scene['eyes'][str(point_idx)] = curved_eye_vertex_group
+            
+                
             bmesh.update_edit_mesh(obj.data)
             bpy.ops.object.mode_set(mode = 'OBJECT')
 

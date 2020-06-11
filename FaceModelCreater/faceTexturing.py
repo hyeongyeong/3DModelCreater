@@ -1,8 +1,18 @@
 import bpy
 
+class MESH_OT_apply_texturing(bpy.types.Operator):
+    bl_idname = "mesh.apply_texturing"
+    bl_label = "apply_texturing"
+    bl_options = {'REGISTER', 'UNDO'}
 
-def texturing(objs):
     
+    def execute(self, context):
+       texturing()
+       return {'FINISHED'}
+
+
+def texturing():
+    objs = bpy.context.scene['my_obj']['ply'].data 
     f_face= open(bpy.context.scene['file_path']['skin_tex'],"r")
     face_R = []
     face_G = []
