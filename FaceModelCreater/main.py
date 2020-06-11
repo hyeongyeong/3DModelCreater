@@ -2,7 +2,6 @@ import os
 import bpy
 import bmesh
 import numpy as np
-from .faceTexturing import texturing 
 
 class main_Operator(bpy.types.Operator):
     bl_idname =  "mesh.create_model_main"
@@ -17,15 +16,15 @@ class main_Operator(bpy.types.Operator):
         bpy.context.scene['file_path'] = {}
         bpy.context.scene['my_obj'] = {}
         # bpy.context.scene['file_path']['point'] = os.getcwd() + "/input/model_point.txt"
-        bpy.context.scene['file_path']['point'] = os.getcwd() + "/input/model_point_hee.txt"
-        bpy.context.scene['file_path']['eye_tex'] = os.getcwd() + "/input/eyeball.jpg"
-        bpy.context.scene['file_path']['eye_brow_tex'] = os.getcwd() + "/input/eyebrow_left.txt"
-        bpy.context.scene['file_path']['mouth_tex'] = os.getcwd() + "/input/mouse.txt"
-        bpy.context.scene['file_path']['skin_tex'] = os.getcwd() + "/input/skin.txt"
+        bpy.context.scene['file_path']['point'] = os.getcwd() + "/../input/model_point_hee.txt"
+        bpy.context.scene['file_path']['eye_tex'] = os.getcwd() + "/../input/eyeball.jpg"
+        bpy.context.scene['file_path']['eye_brow_tex'] = os.getcwd() + "/../input/eyebrow_left.txt"
+        bpy.context.scene['file_path']['mouth_tex'] = os.getcwd() + "/../input/mouse.txt"
+        bpy.context.scene['file_path']['skin_tex'] = os.getcwd() + "/../input/skin.txt"
         # bpy.context.scene['file_path']['face'] = os.getcwd() + "/input/seok_f-output.ply"
         # bpy.context.scene['file_path']['face'] = os.getcwd() + "/input/hee_f-output.ply"
-        bpy.context.scene['file_path']['face'] = os.getcwd() + "/input/" + model_file_name + ".ply"
-        bpy.context.scene['file_path']['mouth_cavity'] = os.getcwd() + "/input/mouth_cavity.obj"
+        bpy.context.scene['file_path']['face'] = os.getcwd() + "/../input/" + model_file_name + ".ply"
+        bpy.context.scene['file_path']['mouth_cavity'] = os.getcwd() + "/../input/mouth_cavity.obj"
 
         
 
@@ -37,12 +36,10 @@ class main_Operator(bpy.types.Operator):
 
         bpy.context.scene['my_obj']['ply'] = bpy.data.objects[model_file_name]
 
-        objs = bpy.data.objects[model_file_name]
-        objs_data = objs.data
 
         #bpy.ops.mesh.mouth()
         bpy.ops.mesh.create_region_group()
-        texturing(objs)
+        bpy.ops.mesh.apply_texturing()
         bpy.ops.mesh.add_eyes()
         
            
