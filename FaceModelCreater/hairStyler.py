@@ -189,6 +189,7 @@ class Hair_styler(bpy.types.Operator):
         deps_graph = bpy.context.evaluated_depsgraph_get()
         deps_obj = head.evaluated_get(deps_graph)
         psys = deps_obj.particle_systems[psys_name]
+        print(len(psys.particles))
         for i in range(len(psys.particles)):
             part = psys.particles[i]
             strand = style[i]

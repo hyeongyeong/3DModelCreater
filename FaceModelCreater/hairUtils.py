@@ -38,7 +38,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":"",
+            "style_path":"",#os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + ".pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             "num_particle": 150,
@@ -121,69 +121,9 @@ def load_preset(option):
     with open(option["style_path"], "rb") as fp:
         full_hair = pickle.load(fp)
     random.shuffle(full_hair)
+    print(len(full_hair))
     return full_hair
-    '''
-    mode = option["mode"]
-    full_hair = []
-    if mode == "eye_brow_l":
-        direct = 1 if option["mode"] == "eye_brow_l" else -1
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-100, 100)
-            for m in range(100):
-                x = i/4+11 + m*m*direct/100
-                y = (10000-i)*i/(6*6) + i%6 + (1e-4*m+1)*y_rand*m
-                z = ((i)**2)*(-1)*1e-1+(1600-(m-40)**2)*1e+2
-                strand.append((x,y,z))
-            full_hair.append(strand)
-
-    elif mode == "eye_brow_r":
-        direct = 1 if option["mode"] == "eye_brow_l" else -1
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-100, 100)
-            for m in range(100):
-                x = i/4+11 + m*m*direct/100
-                y = (10000-i)*i/(6*6) + i%6 + (1e-4*m+1)*y_rand*m 
-                z = ((10000-i)**2)*(-1)*1e-1+(1600-(m-40)**2)*1e+2
-                strand.append((x,y,z))
-            full_hair.append(strand)
-
-    elif mode == "mustache":
-
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-10, 10)
-            length = random.uniform(0.9, 1.0)
-            for m in range(100):
-                strand.append((i/2+11, i%2+11+y_rand+(m*y_rand*0.001-m*m)*(1e-5), length*(1+(360-(m-60)**2)*(1e-7))  ))
-            full_hair.append(strand)
-        
-    elif mode == "beard":
-                        
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-10, 10)
-            length = random.uniform(0.9, 1.0)
-            for m in range(100):
-                strand.append((i/2+11, i%2+11+y_rand+(m*y_rand*0.001-m*m)*(1e-5), length*(1+(360-(m-60)**2)*(1e-7))  ))
-            full_hair.append(strand)
-        
-    elif mode == "hair":
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-10, 10)
-            length = random.uniform(0.9, 1.0)
-            for m in range(100):
-                strand.append((0,0,0))
-            full_hair.append(strand)
-
-    else:
-        print("[[ERR]] MODE error")
-        sys.exit(1)
-
-    return full_hair
-    '''
+    
 
 #############################################################################
 ###################### Graphics Tools #######################################
@@ -409,9 +349,82 @@ def generate_style(option, scalp_tris=None, num_root=700, num_vtx=100):
     fp.close()
     return guide_hair
 
-def print_style(num_style, style=None):
-    path_store=os.getcwd()+"/input/eye_brow_l_%2d.pk" % (num_style)
-    fp = open(path_store, "wb")
+def print_style(model, psys_name="") :
+    deps_graph = bpy.context.evaluated_depsgraph_get()
+    head = model.evaluated_get(deps_graph)
+    psys = head.particle_systems["auto_" + psys_name]
+    parts = []
+    for i in range(len(psys.particles)):
+        part = psys.particles[i]
+        hair_keys = []
+        for m in range(len(part.hair_keys)):
+            key = part.hair_keys[m]
+            hair_keys.append(list(key.co_local))
+        parts.append( [list(part.location), hair_keys] )        
 
-    fp.close()
-    
+    with open(os.getcwd()+"/FaceModelCreater/backup/custom_" + psys_name + ".pk", "wb") as fp:
+        print(os.getcwd()+"/FaceModelCreater/backup/custom_" + psys_name + ".pk")
+        pickle.dump(parts, fp)
+
+    '''
+    mode = option["mode"]
+    full_hair = []
+    if mode == "eye_brow_l":
+        direct = 1 if option["mode"] == "eye_brow_l" else -1
+        for i in range(10000):            
+            strand = []
+            y_rand = random.randint(-100, 100)
+            for m in range(100):
+                x = i/4+11 + m*m*direct/100
+                y = (10000-i)*i/(6*6) + i%6 + (1e-4*m+1)*y_rand*m
+                z = ((i)**2)*(-1)*1e-1+(1600-(m-40)**2)*1e+2
+                strand.append((x,y,z))
+            full_hair.append(strand)
+
+    elif mode == "eye_brow_r":
+        direct = 1 if option["mode"] == "eye_brow_l" else -1
+        for i in range(10000):            
+            strand = []
+            y_rand = random.randint(-100, 100)
+            for m in range(100):
+                x = i/4+11 + m*m*direct/100
+                y = (10000-i)*i/(6*6) + i%6 + (1e-4*m+1)*y_rand*m 
+                z = ((10000-i)**2)*(-1)*1e-1+(1600-(m-40)**2)*1e+2
+                strand.append((x,y,z))
+            full_hair.append(strand)
+
+    elif mode == "mustache":
+
+        for i in range(10000):            
+            strand = []
+            y_rand = random.randint(-10, 10)
+            length = random.uniform(0.9, 1.0)
+            for m in range(100):
+                strand.append((i/2+11, i%2+11+y_rand+(m*y_rand*0.001-m*m)*(1e-5), length*(1+(360-(m-60)**2)*(1e-7))  ))
+            full_hair.append(strand)
+        
+    elif mode == "beard":
+                        
+        for i in range(10000):            
+            strand = []
+            y_rand = random.randint(-10, 10)
+            length = random.uniform(0.9, 1.0)
+            for m in range(100):
+                strand.append((i/2+11, i%2+11+y_rand+(m*y_rand*0.001-m*m)*(1e-5), length*(1+(360-(m-60)**2)*(1e-7))  ))
+            full_hair.append(strand)
+        
+    elif mode == "hair":
+        for i in range(10000):            
+            strand = []
+            y_rand = random.randint(-10, 10)
+            length = random.uniform(0.9, 1.0)
+            for m in range(100):
+                strand.append((0,0,0))
+            full_hair.append(strand)
+
+    else:
+        print("[[ERR]] MODE error")
+        sys.exit(1)
+
+    return full_hair
+    '''
