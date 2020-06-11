@@ -164,13 +164,13 @@ def get_feature_point():
         bpy.ops.object.mode_set(mode = 'EDIT')
     bpy.ops.object.mode_set(mode = 'EDIT') 
     bpy.ops.mesh.select_all(action = 'DESELECT')
-    
-    bpy.ops.object.mode_set(mode = 'OBJECT')
-    bpy.context.active_object.data.vertices[coord_fst[0]].select = True
-    bpy.context.active_object.data.vertices[coord_fst[1]].select = True
-    bpy.context.active_object.data.vertices[coord_scd[0]].select = True
-    bpy.context.active_object.data.vertices[coord_scd[1]].select = True
-    bpy.ops.object.mode_set(mode = 'EDIT')
+    if coord_fst : 
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.context.active_object.data.vertices[coord_fst[0]].select = True
+        bpy.context.active_object.data.vertices[coord_fst[1]].select = True
+        bpy.context.active_object.data.vertices[coord_scd[0]].select = True
+        bpy.context.active_object.data.vertices[coord_scd[1]].select = True
+        bpy.ops.object.mode_set(mode = 'EDIT')
     
     #return coord_fst[0],coord_fst[1],coord_scd[0],coord_scd[1]
 
@@ -185,9 +185,15 @@ class nostril(Operator, AddObjectHelper):
     bl_label = "nostril"
     bl_options = {'REGISTER', 'UNDO'}
     def execute(self, context):
-        print('helloo')
         objs = bpy.context.scene['my_obj']['ply']
         objs_data = objs.data
+
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action = 'DESELECT')
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.context.view_layer.objects.active = objs
+        objs.select_set(True)
+
         delete_nose_hole(objs_data)
         
 
