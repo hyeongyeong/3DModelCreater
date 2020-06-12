@@ -20,7 +20,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":"",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_1.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             "num_particle": 150,
@@ -30,15 +30,15 @@ def get_styling_option(STYLER_MODE, head):
             "proj_dir":True,
             
             # Child
-            "child":False,
-            "child_radius":3
+            "child":True,
+            "child_radius":2
     }
 
     option["eye_brow_r"] = {
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":"",#os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + ".pk",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_1.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             "num_particle": 150,
@@ -48,11 +48,11 @@ def get_styling_option(STYLER_MODE, head):
             "proj_dir":True,
             
             # Child
-            "child":False,
-            "child_radius":3
+            "child":True,
+            "child_radius":2
                 
     }
-
+ 
     option["mustache"] = {
             "mode":STYLER_MODE,
             "head":head,
@@ -235,8 +235,8 @@ def set_child(option):
         psys_name = option["psys_name"]
         psys = head.particle_systems[psys_name]
         psys.settings.child_type = "SIMPLE"
-        psys.settings.child_nbr = 4
-        psys.settings.rendered_child_count = 4
+        psys.settings.child_nbr = 2
+        psys.settings.rendered_child_count = 2
         psys.settings.child_length = 1.0
         psys.settings.child_length_threshold = 0.0
         psys.settings.child_radius = option["child_radius"]
@@ -303,10 +303,10 @@ def generate_style(option, scalp_tris=None, num_root=700, num_vtx=100):
     
     if mode == "eye_brow_l":
         force = Vector((100, -9.8, -50))
-        length = (max_x-min_x)/(num_vtx*10)
+        length = (max_x-min_x)/(num_vtx*50)
     elif mode == "eye_brow_r":
         force = Vector((-100, -9.8, -50))
-        length = (max_x-min_x)/(num_vtx*10)
+        length = (max_x-min_x)/(num_vtx*50)
     elif mode == "mustache":
         force = Vector((0, -98, -15))
         length = (max_x-min_x)/(num_vtx*10)
@@ -365,6 +365,52 @@ def print_style(model, psys_name="") :
     with open(os.getcwd()+"/FaceModelCreater/backup/custom_" + psys_name + ".pk", "wb") as fp:
         print(os.getcwd()+"/FaceModelCreater/backup/custom_" + psys_name + ".pk")
         pickle.dump(parts, fp)
+
+
+def print_hair():
+    model = bpy.context.view_layer.objects.active
+    psys_name = "eye_brow_r"
+    deps_graph = bpy.context.evaluated_depsgraph_get()
+    head = model.evaluated_get(deps_graph)
+    psys = head.particle_systems["auto_" + psys_name]
+    parts = []
+    for i in range(len(psys.particles)):
+        part = psys.particles[i]
+        hair_keys = []
+        for m in range(len(part.hair_keys)):
+            key = part.hair_keys[m]
+            hair_keys.append(list(key.co_local))
+        parts.append( hair_keys )        
+
+    with open(os.getcwd()+"/FaceModelCreater/backup/custom_" + psys_name + ".pk", "wb") as fp:
+        print(os.getcwd()+"/FaceModelCreater/backup/custom_" + psys_name + ".pk")
+        pickle.dump(parts, fp)
+
+def load():
+    model = bpy.context.view_layer.objects.active
+    psys_name = "eye_brow_r"
+    deps_graph = bpy.context.evaluated_depsgraph_get()
+    head = model.evaluated_get(deps_graph)
+    psys = head.particle_systems["auto_" + psys_name]
+    print(len(psys.particles))
+    
+    
+    with open(os.getcwd()+"/FaceModelCreater/backup/custom_" + psys_name + ".pk", "rb") as fp:
+        print(os.getcwd()+"/FaceModelCreater/backup/custom_" + psys_name + ".pk")
+        style = pickle.load(fp)
+    
+    #print(style)
+    
+    for i in range(len(psys.particles)):
+        part = psys.particles[i]
+        strand = style[i]
+        print(strand)
+        part.location = strand[0]
+        
+        for m in range(len(part.hair_keys)):
+            key = part.hair_keys[m]
+            key.co_local = strand[m]
+
 
     '''
     mode = option["mode"]

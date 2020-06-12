@@ -59,27 +59,28 @@ class Hair_styler(bpy.types.Operator):
     ######################## Custom #####################################
     def generate_custom_style(self, option, full_hair):
         head = option["head"]
-        step_idx = sorted(numpy.random.random_integers(1, 98, option["hair_step"]-1))
         scale, coord_scalp, coord_hair = self.get_transform(option, full_hair, head)
         
         guide_hair = []
         for selected in full_hair:
             if len(guide_hair) == option["num_particle"]:
                 break
-
-            if len(selected) != 100:
-                continue
-
+            
             for i in range(len(selected)):
                 selected[i] = transform(selected[i], coord_hair, coord_scalp, scale)
 
+            num_sample = len(selected)
+            if num_sample > option["hair_step"]:
+                num_sample = option["hair_step"]
+            step_idx = sorted(numpy.random.random_integers(1, len(selected)-1, num_sample-1))
             guide_strand = [selected[0]]
             for step in step_idx:
                 guide_strand.append(selected[step])
-            guide_strand.append(selected[99])
+            guide_strand.append(selected[len(selected)-1])
             guide_hair.append(guide_strand)
         self.fitting_proj(option, guide_hair, head, coord_scalp)
         guide_hair.sort(key=lambda strand:(strand[0][0], strand[0][1], strand[0],[2]))
+        
         return guide_hair
 
     def get_transform(self, option, hair, head):
@@ -189,15 +190,20 @@ class Hair_styler(bpy.types.Operator):
         deps_graph = bpy.context.evaluated_depsgraph_get()
         deps_obj = head.evaluated_get(deps_graph)
         psys = deps_obj.particle_systems[psys_name]
-        print(len(psys.particles))
         for i in range(len(psys.particles)):
+            style_idx = i
+            if i >= len(style):
+                style_idx = len(style)-1
             part = psys.particles[i]
-            strand = style[i]
+            strand = style[style_idx]
             part.location = strand[0]
-            
+
             for m in range(len(part.hair_keys)):
+                strand_m = m
+                if m >= len(strand):
+                    strand_m = len(strand)-1
                 key = part.hair_keys[m]
-                key.co = strand[m]
+                key.co = strand[strand_m]
 
     def finalize_styling(self, option):
         bpy.ops.particle.particle_edit_toggle()
