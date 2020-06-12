@@ -543,7 +543,8 @@ def select_intersect_vertices(target, obj, group_name):
                 break
             else:
                 t.select = False
-            
+    
+    bpy.context.scene['vertex_group_index'][group_name] = verts
     vg=bpy.context.object.vertex_groups.new(name=group_name)
     bpy.ops.object.vertex_group_assign()
     
@@ -634,6 +635,7 @@ def create_boolean_vertex_group(face, target_vg_name, comparison_name, new_vg_na
         if c in target_vg_index:
             bm.verts[c].select = False
 
+
     vg=bpy.context.object.vertex_groups.new(name=new_vg_name)
     bpy.ops.object.vertex_group_assign()
 
@@ -676,6 +678,30 @@ def create_boundary_loop_vg(target, vg_name, new_vg_name):
 
     bpy.ops.mesh.select_all(action = 'DESELECT')
 
+# 평면 difference로 생성되었던 plane 지우기
+def remove_plane_by_vg(target,vg_name):
+    vertex_index = []
+
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+
+    bpy.ops.object.vertex_group_set_active(group= vg_name)
+    bpy.ops.object.vertex_group_select()
+
+    bm=bmesh.from_edit_mesh(target.data)
+    bm.verts.ensure_lookup_table()
+
+    vertex_index = get_vertex_index_by_vg(target, vg_name)
+
+    for t in vertex_index:
+        if bm.verts[t].normal.z > 0.2:
+            bm.verts[t].select = False
+        else:
+            bm.verts[t].select = True
+        
+    bpy.ops.mesh.delete(type='VERT')
+
+
 class MESH_OT_create_region_group(Operator, AddObjectHelper):
     bl_idname = "mesh.create_region_group"
     bl_label = "Create region group"
@@ -711,6 +737,10 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             # create boundary loop of exist vertex group
             create_boundary_loop_vg(target, "eye_brow_r", "eye_brow_r_boundary")
             create_boundary_loop_vg(target, "eye_brow_l", "eye_brow_l_boundary")
+
+            # remove back-plane of eye-brow
+            remove_plane_by_vg(target, "eye_brow_r_boundary")
+            remove_plane_by_vg(target, "eye_brow_l_boundary")
 
             vertex_group_mustache_beard(target.data, "temp1","temp2")
             

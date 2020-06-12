@@ -9,7 +9,7 @@ def setGlobalFilePath():
     # set global file path
     bpy.context.scene['file_path'] = {}
     bpy.context.scene['my_obj'] = {}
-    bpy.context.scene['eyes'] = {}
+    bpy.context.scene['vertex_group_index'] = {}
 
     # bpy.context.scene['file_path']['point'] = os.getcwd() + "/input/model_point_hee.txt"
     bpy.context.scene['file_path']['point'] = os.getcwd() + "/input/model_point.txt"
