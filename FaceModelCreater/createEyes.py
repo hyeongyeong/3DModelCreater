@@ -334,7 +334,21 @@ def create_eye_boudary_vg(target, comparison, new_vg_name):
     bpy.ops.mesh.select_all(action = 'DESELECT')
     bpy.ops.object.mode_set(mode = 'OBJECT')
 
+def create_eye_hole(target, planes):
+    for i, p in enumerate(planes) :
+                
+        # create vertex group
+        if i == 0 :
+            vg_name = "eye_left_boundary"
+        else :
+            vg_name = "eye_right_boundary"
 
+        new_obj = duplicate_obj(target)
+        comparison = apply_boolean(new_obj, p , "INTERSECT", False)
+        apply_boolean(target, p , "DIFFERENCE", True)
+        create_eye_boudary_vg(target, comparison, vg_name)
+        delete_object(new_obj)
+               
 class MESH_OT_add_eyes(Operator, AddObjectHelper):
     """Create a new Mesh Object"""
     bl_idname = "mesh.add_eyes"
@@ -359,21 +373,7 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
 
             planes = make_curved_eye_plane(self, context, eye_point)
             
-            for i, p in enumerate(planes) :
-                
-                # create vertex group
-                if i == 0 :
-                    vg_name = "eye_left_boundary"
-                else :
-                    vg_name = "eye_right_boundary"
-                new_obj = duplicate_obj(target)
-                comparison = apply_boolean(new_obj, p , "INTERSECT", False)
-                apply_boolean(target, p , "DIFFERENCE", True)
-                create_eye_boudary_vg(target, comparison, vg_name)
-                delete_object(new_obj)
-                
-                # target , plane, operation, delete
-               
+            create_eye_hole(target, planes)
 
             add_eyeball(self, context, eye_point , eye_texture_path)
             
