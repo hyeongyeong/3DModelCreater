@@ -3,7 +3,7 @@ import bpy
 import bmesh
 import numpy as np
 
-ModelFileName = "hee_f-output" 
+ModelFileName = "seok_f-output" 
 
 def setGlobalFilePath():
     # set global file path
@@ -11,7 +11,8 @@ def setGlobalFilePath():
     bpy.context.scene['my_obj'] = {}
     bpy.context.scene['eyes'] = {}
 
-    bpy.context.scene['file_path']['point'] = os.getcwd() + "/input/model_point_hee.txt"
+    # bpy.context.scene['file_path']['point'] = os.getcwd() + "/input/model_point_hee.txt"
+    bpy.context.scene['file_path']['point'] = os.getcwd() + "/input/model_point.txt"
     bpy.context.scene['file_path']['eye_tex'] = os.getcwd() + "/input/eyeball.jpg"
     bpy.context.scene['file_path']['eye_brow_tex'] = os.getcwd() + "/input/eyebrow_left.txt"
     bpy.context.scene['file_path']['mouth_tex'] = os.getcwd() + "/input/mouse.txt"

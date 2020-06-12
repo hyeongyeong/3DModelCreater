@@ -276,14 +276,6 @@ def make_curved_eye_plane(self,context, coord):
                 loop_slide    = True,
                 material      = -1,offset_type   = 'OFFSET',)
             
-            curved_eye_vertex_group = []
-            
-
-            for vert in bm.verts:
-                curved_eye_vertex_group.append(vert.co)
-
-            bpy.context.scene['eyes'][str(point_idx)] = curved_eye_vertex_group
-            
                 
             bmesh.update_edit_mesh(obj.data)
             bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -293,6 +285,55 @@ def make_curved_eye_plane(self,context, coord):
             
     
     return planes
+
+def duplicate_obj(target):
+
+    target.select_set(True)
+    
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+    
+    bpy.ops.object.select_all(action='DESELECT')
+    
+    new_obj = target.copy()
+    new_obj.data = target.data.copy()
+    bpy.context.collection.objects.link(new_obj) 
+    
+    return new_obj
+
+def delete_object(target) : 
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    target.select_set(True) # Blender 2.8x
+    bpy.ops.object.delete() 
+
+def create_eye_boudary_vg(target, comparison, new_vg_name):
+
+    target.select_set(True)
+    bpy.context.view_layer.objects.active = target
+
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+
+    bm=bmesh.from_edit_mesh(target.data)
+    bm.verts.ensure_lookup_table()
+
+    intersected_vertex_index = []
+    comparison_v = comparison.data.vertices
+
+    for i, v in enumerate(bm.verts):
+        for c in comparison_v:
+            v.select = False
+            if np.array_equal(v.co, c.co) : 
+                v.select = True
+                intersected_vertex_index.append(v)
+                break
+
+    vg=bpy.context.object.vertex_groups.new(name=new_vg_name)
+    bpy.ops.object.vertex_group_assign()
+    
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
 
 class MESH_OT_add_eyes(Operator, AddObjectHelper):
     """Create a new Mesh Object"""
@@ -317,10 +358,22 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
             eye_point = coord[20:32]
 
             planes = make_curved_eye_plane(self, context, eye_point)
-
-            for p in planes :
-                # target , plane, operation, delete
+            
+            for i, p in enumerate(planes) :
+                
+                # create vertex group
+                if i == 0 :
+                    vg_name = "eye_left_boundary"
+                else :
+                    vg_name = "eye_right_boundary"
+                new_obj = duplicate_obj(target)
+                comparison = apply_boolean(new_obj, p , "INTERSECT", False)
                 apply_boolean(target, p , "DIFFERENCE", True)
+                create_eye_boudary_vg(target, comparison, vg_name)
+                delete_object(new_obj)
+                
+                # target , plane, operation, delete
+               
 
             add_eyeball(self, context, eye_point , eye_texture_path)
             

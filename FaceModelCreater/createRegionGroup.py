@@ -313,36 +313,36 @@ def vertex_group_philtrum(objs_data,group_name):
     bpy.ops.mesh.select_all(action = 'DESELECT')
     bpy.ops.object.mode_set(mode = 'OBJECT')
 
-def vertex_group_eyelashes(objs_data,group_name1,group_name2):
+# def vertex_group_eyelashes(objs_data,group_name1,group_name2):
 
-    eye_left_array = bpy.context.scene['eyes'][str(0)]
-    eye_right_array = bpy.context.scene['eyes'][str(1)]
-    my_object =objs_data
-    faces = my_object.vertices       
+#     eye_left_array = bpy.context.scene['eyes'][str(0)]
+#     eye_right_array = bpy.context.scene['eyes'][str(1)]
+#     my_object =objs_data
+#     faces = my_object.vertices       
     
-    for i in eye_left_array:
-        eye = Vector(i)
-        for fa in faces:
-            if(eye.x == fa.co.x and eye.y == fa.co.y):
-                fa.select = True                      
+#     for i in eye_left_array:
+#         eye = Vector(i)
+#         for fa in faces:
+#             if(eye.x == fa.co.x and eye.y == fa.co.y):
+#                 fa.select = True                      
 
-    bpy.ops.object.mode_set(mode = 'EDIT')
-    vg=bpy.context.object.vertex_groups.new(name=group_name1)
-    bpy.ops.object.vertex_group_assign()
-    bpy.ops.mesh.select_all(action = 'DESELECT')
-    bpy.ops.object.mode_set(mode = 'OBJECT')
+#     bpy.ops.object.mode_set(mode = 'EDIT')
+#     vg=bpy.context.object.vertex_groups.new(name=group_name1)
+#     bpy.ops.object.vertex_group_assign()
+#     bpy.ops.mesh.select_all(action = 'DESELECT')
+#     bpy.ops.object.mode_set(mode = 'OBJECT')
 
-    for i in eye_right_array:
-        eye = Vector(i)
-        for fa in faces:
-            if(eye.x == fa.co.x and eye.y == fa.co.y):
-                fa.select = True                      
+#     for i in eye_right_array:
+#         eye = Vector(i)
+#         for fa in faces:
+#             if(eye.x == fa.co.x and eye.y == fa.co.y):
+#                 fa.select = True                      
 
-    bpy.ops.object.mode_set(mode = 'EDIT')
-    vg=bpy.context.object.vertex_groups.new(name=group_name2)
-    bpy.ops.object.vertex_group_assign()
-    bpy.ops.mesh.select_all(action = 'DESELECT')
-    bpy.ops.object.mode_set(mode = 'OBJECT')
+#     bpy.ops.object.mode_set(mode = 'EDIT')
+#     vg=bpy.context.object.vertex_groups.new(name=group_name2)
+#     bpy.ops.object.vertex_group_assign()
+#     bpy.ops.mesh.select_all(action = 'DESELECT')
+#     bpy.ops.object.mode_set(mode = 'OBJECT')
 
 def isInside(aa,bb,cc):
     crosses = 0
@@ -583,7 +583,6 @@ def select_intersect_vertices(target, obj, group_name):
     bpy.ops.object.mode_set(mode = 'OBJECT')    
 
 def duplicate_obj(target):
-    
 
     target.select_set(True)
     
@@ -746,7 +745,7 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             create_boundary_loop_vg(target, "eye_brow_l", "eye_brow_l_boundary")
 
             vertex_group_mustache_beard(target.data, "temp1","temp2")
-            vertex_group_eyelashes(target.data,"left_eyelashes","right_eyelashes")
+            # vertex_group_eyelashes(target.data,"left_eyelashes","right_eyelashes")
             
             # create vertex group using exist vertex group
             create_boolean_vertex_group(target,"temp1", "lips", "mustache")            
