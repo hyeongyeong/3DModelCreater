@@ -720,7 +720,7 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             eye_brow_left_coord = eye_brow_thickness(eye_brow_left_coord, -1) # LEFT
 
             # create vertex group of lips
-            vertex_group_mouth_boundary()
+            vertex_group_mouth_boundary(target)
             vertex_group_philtrum(target.data,"philtrum")
             
             # create vertex group with curved plane
