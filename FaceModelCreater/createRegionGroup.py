@@ -695,6 +695,19 @@ def remove_vertex_group(target, vg_name):
     bpy.ops.object.vertex_group_set_active(group=vg_name)
     bpy.ops.object.vertex_group_remove()
 
+def create_boundary_loop_vg(target, vg_name, new_vg_name):
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+
+    bpy.ops.object.vertex_group_set_active(group= vg_name)
+    bpy.ops.object.vertex_group_select()
+
+    bpy.ops.mesh.region_to_loop()
+
+    vg=bpy.context.object.vertex_groups.new(name=new_vg_name)
+    bpy.ops.object.vertex_group_assign()
+
+    bpy.ops.mesh.select_all(action = 'DESELECT')
 
 class MESH_OT_create_region_group(Operator, AddObjectHelper):
     bl_idname = "mesh.create_region_group"
@@ -727,6 +740,10 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             create_curved_region_group(self, context, target, lips_coord, "lips")
             create_curved_region_group(self, context, target, eye_brow_right_coord, "eye_brow_r")
             create_curved_region_group(self, context, target, eye_brow_left_coord, "eye_brow_l")
+
+            # create boundary loop of exist vertex group
+            create_boundary_loop_vg(target, "eye_brow_r", "eye_brow_r_boundary")
+            create_boundary_loop_vg(target, "eye_brow_l", "eye_brow_l_boundary")
 
             vertex_group_mustache_beard(target.data, "temp1","temp2")
             vertex_group_eyelashes(target.data,"left_eyelashes","right_eyelashes")
