@@ -20,17 +20,17 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_1.pk",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
-            "num_particle": 150,
+            "num_particle": 170,
             "hair_step":14,
             "physics":False,
             "static_scalp":True,
             "proj_dir":True,
             
             # Child
-            "child":True,
+            "child":False,
             "child_radius":2
     }
 
@@ -38,17 +38,17 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_1.pk",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
-            "num_particle": 150,
+            "num_particle": 170,
             "hair_step":14,
             "physics":False,
             "static_scalp":True,
             "proj_dir":True,
             
             # Child
-            "child":True,
+            "child":False,
             "child_radius":2
                 
     }
@@ -57,7 +57,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":"",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             "num_particle": 200,

@@ -72,7 +72,8 @@ class Hair_styler(bpy.types.Operator):
             num_sample = len(selected)
             if num_sample > option["hair_step"]:
                 num_sample = option["hair_step"]
-            step_idx = sorted(numpy.random.random_integers(1, len(selected)-1, num_sample-1))
+            step_idx = sorted( random.sample( range(1,len(selected)), num_sample-1 )    )
+            #step_idx = sorted(numpy.random.random_integers(1, len(selected)-1, num_sample-1))
             guide_strand = [selected[0]]
             for step in step_idx:
                 guide_strand.append(selected[step])
