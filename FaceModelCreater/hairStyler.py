@@ -29,7 +29,7 @@ class Hair_styler(bpy.types.Operator):
         "beard",
         #"hair"
     ]
-    NAME_HEAD = "hee_f"
+    NAME_HEAD = "seok_f"
 
     def execute(self, context):
 
@@ -43,6 +43,8 @@ class Hair_styler(bpy.types.Operator):
     def do_styling(self, STYLER_MODE):
 
         head = utils_select_obj(target=self.NAME_HEAD)
+        if head == None:
+            head = bpy.context.view_layer.objects.active
         option = get_styling_option(STYLER_MODE, head)
         utils_add_particle_system(option)
         if option["style_path"] != "":

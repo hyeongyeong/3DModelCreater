@@ -20,7 +20,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_6.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             "num_particle": 170,
@@ -38,7 +38,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_6.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             "num_particle": 170,
@@ -197,7 +197,8 @@ def utils_select_obj(target):
             break
         else :
             obj = None
-    bpy.context.view_layer.objects.active = obj
+    if obj != None:
+        bpy.context.view_layer.objects.active = obj
     return obj
     
 
@@ -287,7 +288,7 @@ def add_cube(xyz, idx=1):
 def generate_style(option, scalp_tris=None, num_root=700, num_vtx=100):
     mode = option["mode"]
     path_store=os.getcwd()+"/FaceModelCreater/backup/%s.pk" % (mode)
-    fp = open(path_store, "wb")
+    #fp = open(path_store, "wb")
     roots = []
     normals = []
     total_area = 0.0
@@ -345,8 +346,8 @@ def generate_style(option, scalp_tris=None, num_root=700, num_vtx=100):
     for i, strand in enumerate(guide_hair):
         for m, v in enumerate(strand):
             guide_hair[i][m] = list(v)
-    pickle.dump(guide_hair, fp)
-    fp.close()
+    #pickle.dump(guide_hair, fp)
+    #fp.close()
     return guide_hair
 
 def print_style(model, psys_name="") :
