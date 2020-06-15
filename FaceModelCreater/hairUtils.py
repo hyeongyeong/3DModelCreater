@@ -23,15 +23,23 @@ def get_styling_option(STYLER_MODE, head):
             "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_6.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
+
+            # Shape
             "num_particle": 170,
             "hair_step":14,
+            "vertex_group_density":None,
+            "emit_from":"FACE",
+            "length":2,
+
+            # Physics
             "physics":False,
-            "static_scalp":True,
-            "proj_dir":True,
-            
+
             # Child
             "child":False,
-            "child_radius":2
+            "child_radius":2,
+
+            # Styling option
+            "styling_process":True,
     }
 
     option["eye_brow_r"] = {
@@ -41,15 +49,23 @@ def get_styling_option(STYLER_MODE, head):
             "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_6.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
+            
+            # Shape
             "num_particle": 170,
             "hair_step":14,
+            "vertex_group_density":None,
+            "emit_from":"FACE",
+            "length":2,
+
+            # Physics
             "physics":False,
-            "static_scalp":True,
-            "proj_dir":True,
             
             # Child
             "child":False,
-            "child_radius":2
+            "child_radius":2,
+
+            # Styling option
+            "styling_process":True,
                 
     }
  
@@ -60,15 +76,23 @@ def get_styling_option(STYLER_MODE, head):
             "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
+            
+            # Shape
             "num_particle": 200,
             "hair_step":10,
+            "vertex_group_density":None,
+            "emit_from":"FACE",
+            "length":2,
+
+            # Physics
             "physics":False,
-            "static_scalp":True,
-            "proj_dir":True,
             
             # Child
             "child":False,
-            "child_radius":3            
+            "child_radius":3,
+
+            # Styling option
+            "styling_process":True,    
     }
 
     option["beard"] = {
@@ -78,17 +102,79 @@ def get_styling_option(STYLER_MODE, head):
             "style_path":"",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
+           
+            # Shape
             "num_particle": 500,
-            "hair_step":10,
+            "hair_step":7,
+            "vertex_group_density":None,
+            "emit_from":"FACE",
+            "length":2,
+            
+            # Physics
             "physics":False,
-            "static_scalp":True,
-            "proj_dir":True,
             
             # Child
             "child":False,
-            "child_radius":3
-                    
+            "child_radius":3,
+
+            # Styling option
+            "styling_process":True,
     }
+
+    option["eye_left_boundary"] = {
+            "mode":STYLER_MODE,
+            "head":head,
+            "scalp_name":STYLER_MODE,
+            "style_path":"",
+            "material":utils_select_material(head, "material_" + STYLER_MODE),
+            "psys_name":"auto_" + STYLER_MODE,
+            
+            # Shape
+            "num_particle": 100,
+            "hair_step":7,
+            "vertex_group_density":"eye_left_boundary",
+            "emit_from":"VERT",
+            "length":3,
+            
+            # Physics
+            "physics":False,
+            
+            # Child
+            "child":False,
+            "child_radius":2,
+
+            # Styling option
+            "styling_process":False,
+    }
+
+    option["eye_right_boundary"] = {
+            "mode":STYLER_MODE,
+            "head":head,
+            "scalp_name":STYLER_MODE,
+            "style_path":"",
+            "material":utils_select_material(head, "material_" + STYLER_MODE),
+            "psys_name":"auto_" + STYLER_MODE,
+            
+            # Shape
+            "num_particle": 100,
+            "hair_step":7,
+            "vertex_group_density":"eye_right_boundary",
+            "emit_from":"VERT",
+            "length":3,
+
+            # Physics
+            "physics":False,
+            
+            # Child
+            "child":False,
+            "child_radius":2,
+
+            # Styling option
+            "styling_process":False,
+    }
+
+
+
 
     option["hair"] = {
             "mode":STYLER_MODE,
@@ -105,8 +191,10 @@ def get_styling_option(STYLER_MODE, head):
             
             # Child
             "child":False,
-            "child_radius":3
-                    
+            "child_radius":3,
+
+            # Styling option
+            "styleing_process":False,                    
     }
 
     if STYLER_MODE not in option:    
@@ -213,20 +301,29 @@ def utils_add_particle_system(option):
     head.particle_systems[-1].name = psys_name
     psys = head.particle_systems[psys_name]
 
+    # General setting
+    bpy.context.scene.render.hair_type = "STRIP"
+
     # Setting - generate
     psys.settings.type = "HAIR"
+    psys.settings.root_radius = 15
+    psys.settings.tip_radius = 10
     psys.settings.render_step = 5
     psys.settings.display_step = 3
-    psys.settings.hair_length = 4.0
+    psys.settings.hair_length = option["length"]
     psys.settings.count = option["num_particle"]
     psys.settings.hair_step = option["hair_step"]
-    psys.settings.emit_from = "FACE"
+    psys.settings.emit_from = option["emit_from"]
     psys.settings.use_strand_primitive = True
     
     # Setting - color
     mat_hair = option["material"]
     psys.settings.material_slot = mat_hair.name
     
+    # Setting - vertex_group
+    if option["vertex_group_density"] != None:
+        psys.vertex_group_density = option["vertex_group_density"]
+
     return psys
 
 
@@ -287,8 +384,9 @@ def add_cube(xyz, idx=1):
 
 def generate_style(option, scalp_tris=None, num_root=700, num_vtx=100):
     mode = option["mode"]
-    path_store=os.getcwd()+"/FaceModelCreater/backup/%s.pk" % (mode)
-    #fp = open(path_store, "wb")
+
+    if mode == "eye_left_boundary" or mode == "eye_right_boundary":
+        return generate_styl_lashes(option)
     roots = []
     normals = []
     total_area = 0.0
@@ -346,8 +444,39 @@ def generate_style(option, scalp_tris=None, num_root=700, num_vtx=100):
     for i, strand in enumerate(guide_hair):
         for m, v in enumerate(strand):
             guide_hair[i][m] = list(v)
-    #pickle.dump(guide_hair, fp)
-    #fp.close()
+    return guide_hair
+
+def generate_styl_lashes(option):
+    guide_hair = []
+    scalp = []
+    normals = []
+    head = option["head"]
+
+    min_v = [1000000000, 0, 0]
+    max_v = [0, 0, 0]
+
+    for v in head.data.vertices :
+        for g in v.groups :
+            if g.group == head.vertex_groups[option["scalp_name"]].index :
+                scalp.append(v.co)
+                normals.append(v.normal)
+                if min_v[0] > abs(v.co[0]):
+                    min_v[0] = abs(v.co[0])
+                if max_v[0] < abs(v.co[0]):
+                    max_v[0] = abs(v.co[0])
+           
+    #length = max_v[0] - min_v[0]
+
+
+    for i in range(len(scalp)):
+        root = scalp[i]
+        strand = [root]
+        for m in range(option["hair_step"]):
+            strand.append(root+m*normals[i])
+        guide_hair.append(strand)
+    
+
+
     return guide_hair
 
 def print_style(model, psys_name="") :
@@ -411,67 +540,3 @@ def load():
         for m in range(len(part.hair_keys)):
             key = part.hair_keys[m]
             key.co_local = strand[m]
-
-
-    '''
-    mode = option["mode"]
-    full_hair = []
-    if mode == "eye_brow_l":
-        direct = 1 if option["mode"] == "eye_brow_l" else -1
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-100, 100)
-            for m in range(100):
-                x = i/4+11 + m*m*direct/100
-                y = (10000-i)*i/(6*6) + i%6 + (1e-4*m+1)*y_rand*m
-                z = ((i)**2)*(-1)*1e-1+(1600-(m-40)**2)*1e+2
-                strand.append((x,y,z))
-            full_hair.append(strand)
-
-    elif mode == "eye_brow_r":
-        direct = 1 if option["mode"] == "eye_brow_l" else -1
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-100, 100)
-            for m in range(100):
-                x = i/4+11 + m*m*direct/100
-                y = (10000-i)*i/(6*6) + i%6 + (1e-4*m+1)*y_rand*m 
-                z = ((10000-i)**2)*(-1)*1e-1+(1600-(m-40)**2)*1e+2
-                strand.append((x,y,z))
-            full_hair.append(strand)
-
-    elif mode == "mustache":
-
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-10, 10)
-            length = random.uniform(0.9, 1.0)
-            for m in range(100):
-                strand.append((i/2+11, i%2+11+y_rand+(m*y_rand*0.001-m*m)*(1e-5), length*(1+(360-(m-60)**2)*(1e-7))  ))
-            full_hair.append(strand)
-        
-    elif mode == "beard":
-                        
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-10, 10)
-            length = random.uniform(0.9, 1.0)
-            for m in range(100):
-                strand.append((i/2+11, i%2+11+y_rand+(m*y_rand*0.001-m*m)*(1e-5), length*(1+(360-(m-60)**2)*(1e-7))  ))
-            full_hair.append(strand)
-        
-    elif mode == "hair":
-        for i in range(10000):            
-            strand = []
-            y_rand = random.randint(-10, 10)
-            length = random.uniform(0.9, 1.0)
-            for m in range(100):
-                strand.append((0,0,0))
-            full_hair.append(strand)
-
-    else:
-        print("[[ERR]] MODE error")
-        sys.exit(1)
-
-    return full_hair
-    '''
