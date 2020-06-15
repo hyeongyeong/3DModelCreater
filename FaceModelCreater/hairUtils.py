@@ -20,7 +20,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_6.pk",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
 
@@ -30,6 +30,8 @@ def get_styling_option(STYLER_MODE, head):
             "vertex_group_density":None,
             "emit_from":"FACE",
             "length":2,
+            "root_radius":0.12,
+            "tip_radius":0.08,
 
             # Physics
             "physics":False,
@@ -37,6 +39,7 @@ def get_styling_option(STYLER_MODE, head):
             # Child
             "child":False,
             "child_radius":2,
+            "child_num":8,
 
             # Styling option
             "styling_process":True,
@@ -46,7 +49,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_6.pk",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             
@@ -56,6 +59,8 @@ def get_styling_option(STYLER_MODE, head):
             "vertex_group_density":None,
             "emit_from":"FACE",
             "length":2,
+            "root_radius":0.12,
+            "tip_radius":0.08,
 
             # Physics
             "physics":False,
@@ -63,6 +68,7 @@ def get_styling_option(STYLER_MODE, head):
             # Child
             "child":False,
             "child_radius":2,
+            "child_num":8,
 
             # Styling option
             "styling_process":True,
@@ -83,6 +89,8 @@ def get_styling_option(STYLER_MODE, head):
             "vertex_group_density":None,
             "emit_from":"FACE",
             "length":2,
+            "root_radius":0.12,
+            "tip_radius":0.08,
 
             # Physics
             "physics":False,
@@ -90,6 +98,7 @@ def get_styling_option(STYLER_MODE, head):
             # Child
             "child":False,
             "child_radius":3,
+            "child_num":8,
 
             # Styling option
             "styling_process":True,    
@@ -109,6 +118,8 @@ def get_styling_option(STYLER_MODE, head):
             "vertex_group_density":None,
             "emit_from":"FACE",
             "length":2,
+            "root_radius":0.12,
+            "tip_radius":0.08,
             
             # Physics
             "physics":False,
@@ -116,6 +127,7 @@ def get_styling_option(STYLER_MODE, head):
             # Child
             "child":False,
             "child_radius":3,
+            "child_num":8,
 
             # Styling option
             "styling_process":True,
@@ -135,6 +147,8 @@ def get_styling_option(STYLER_MODE, head):
             "vertex_group_density":"eye_left_boundary",
             "emit_from":"VERT",
             "length":3,
+            "root_radius":0.12,
+            "tip_radius":0.08,
             
             # Physics
             "physics":False,
@@ -142,6 +156,7 @@ def get_styling_option(STYLER_MODE, head):
             # Child
             "child":False,
             "child_radius":2,
+            "child_num":8,
 
             # Styling option
             "styling_process":False,
@@ -161,6 +176,8 @@ def get_styling_option(STYLER_MODE, head):
             "vertex_group_density":"eye_right_boundary",
             "emit_from":"VERT",
             "length":3,
+            "root_radius":0.12,
+            "tip_radius":0.08,
 
             # Physics
             "physics":False,
@@ -168,33 +185,40 @@ def get_styling_option(STYLER_MODE, head):
             # Child
             "child":False,
             "child_radius":2,
+            "child_num":8,
 
             # Styling option
             "styling_process":False,
     }
 
 
-
-
     option["hair"] = {
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":"",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/strands00003.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
-            "num_particle": 500,
-            "hair_step":10,
+            
+            # Shape
+            "num_particle": 2000,
+            "hair_step":15,
+            "vertex_group_density":"eye_right_boundary",
+            "emit_from":"FACE",
+            "length":3,
+            "root_radius":0.20,
+            "tip_radius":0.15,
+
+            # Physics
             "physics":False,
-            "static_scalp":True,
-            "proj_dir":True,
             
             # Child
-            "child":False,
-            "child_radius":3,
+            "child":True,
+            "child_radius":0.12,
+            "child_num":8,
 
             # Styling option
-            "styleing_process":False,                    
+            "styling_process":True,                
     }
 
     if STYLER_MODE not in option:    
@@ -234,7 +258,7 @@ def test_normal_dir(normals, threshold=0.2, direction=[0,0,1]):
 def is_inside(p1, p2, model):
     
     origin = p1
-    dir = p2 - p1
+    dir = p1 - p2
     dist = (p2 - p1).length
     result = model.ray_cast(origin, dir, distance=dist)
     n = Vector((0, result[2][1], result[2][2]))
@@ -306,8 +330,8 @@ def utils_add_particle_system(option):
 
     # Setting - generate
     psys.settings.type = "HAIR"
-    psys.settings.root_radius = 15
-    psys.settings.tip_radius = 10
+    psys.settings.root_radius = option["root_radius"]
+    psys.settings.tip_radius = option["tip_radius"]
     psys.settings.render_step = 5
     psys.settings.display_step = 3
     psys.settings.hair_length = option["length"]
@@ -315,6 +339,7 @@ def utils_add_particle_system(option):
     psys.settings.hair_step = option["hair_step"]
     psys.settings.emit_from = option["emit_from"]
     psys.settings.use_strand_primitive = True
+    psys.settings.use_hair_bspline = True
     
     # Setting - color
     mat_hair = option["material"]
@@ -333,8 +358,8 @@ def set_child(option):
         psys_name = option["psys_name"]
         psys = head.particle_systems[psys_name]
         psys.settings.child_type = "SIMPLE"
-        psys.settings.child_nbr = 2
-        psys.settings.rendered_child_count = 2
+        psys.settings.child_nbr = option["child_num"]
+        psys.settings.rendered_child_count = option["child_num"]
         psys.settings.child_length = 1.0
         psys.settings.child_length_threshold = 0.0
         psys.settings.child_radius = option["child_radius"]
@@ -385,7 +410,7 @@ def add_cube(xyz, idx=1):
 def generate_style(option, scalp_tris=None, num_root=700, num_vtx=100):
     mode = option["mode"]
 
-    if mode == "eye_left_boundary" or mode == "eye_right_boundary":
+    if mode == "eye_left_boundary" or mode == "eye_right_boundary" or mode == "hair":
         return generate_styl_lashes(option)
     roots = []
     normals = []
@@ -464,15 +489,26 @@ def generate_styl_lashes(option):
                     min_v[0] = abs(v.co[0])
                 if max_v[0] < abs(v.co[0]):
                     max_v[0] = abs(v.co[0])
-           
-    #length = max_v[0] - min_v[0]
+    
+    length = max_v[0] - min_v[0]
 
+    if option["mode"] == "hair":
+        length *= 40
+
+    m_v = Vector([0, 0, 0])
+    for v in scalp:
+        m_v += v
+    m_v = Vector([m_v[0]/len(scalp), m_v[1]/len(scalp), m_v[2]/len(scalp)])
 
     for i in range(len(scalp)):
         root = scalp[i]
         strand = [root]
+        curl = (root - m_v)
+        curl.normalize()
         for m in range(option["hair_step"]):
-            strand.append(root+m*normals[i])
+            dir = normals[i] + m*curl/option["hair_step"]
+            dir.normalize()
+            strand.append( root+m*(length/40)*dir )
         guide_hair.append(strand)
     
 
