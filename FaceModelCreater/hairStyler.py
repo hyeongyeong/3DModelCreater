@@ -138,7 +138,8 @@ class Hair_styler(bpy.types.Operator):
 
     def fitting_physics(self, option, guided_hair, model, coord_scalp):
         for hair_idx, strand in enumerate(guided_hair):
-            print(hair_idx, len(guided_hair))
+            if hair_idx % 100 == 0:
+                print(hair_idx, len(guided_hair))
             for m in range(1, len(strand)):
                 iter = 0
                 length = (strand[m]-strand[m-1]).length
