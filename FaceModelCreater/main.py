@@ -25,7 +25,8 @@ def setGlobalFilePath():
     bpy.context.scene['file_path']['face'] = os.getcwd() + "/input/" + ModelFileName + ".ply"
     bpy.context.scene['file_path']['mouth_cavity'] = os.getcwd() + "/input/mouth_cavity.obj"
     bpy.context.scene['file_path']['body'] = os.getcwd() + "/input/" + body_file_name + ".dae"
-
+    bpy.context.scene['file_path']['tongue_texture'] = os.getcwd() + "/input/tongue_BaseColor.png"
+    bpy.context.scene['file_path']['teeth_texture'] = os.getcwd() + "/input/jaw_teeth_BaseColor.png"
 
              
 class main_Operator(bpy.types.Operator):
@@ -60,6 +61,7 @@ class main_Operator(bpy.types.Operator):
         bpy.ops.mesh.create_region_group()
 
         bpy.ops.mesh.apply_texturing()
+        bpy.ops.mesh.nostrill()
         bpy.ops.mesh.mouth()
 
         #transformation reset #################################

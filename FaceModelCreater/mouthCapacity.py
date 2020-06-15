@@ -174,7 +174,33 @@ def sort_upperLips(sortedvertices,object_reference,context):
     else:
         move_lip(arry_even,arry_odd,object_reference)  
 
+def mouthCavityTexturing(texturingOBJ,imgTexture):
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+    bpy.context.view_layer.objects.active = texturingOBJ
+    texturingOBJ.select_set(True)
+    # 
+    mat = bpy.data.materials[imgTexture]
+
+    nodes = mat.node_tree.nodes
+    
+    node_texture = nodes.new(type='ShaderNodeTexImage')
+    node_texture.location = 100,200
+
+    if(imgTexture == "125.001"):
+        img = bpy.data.images.load(bpy.context.scene['file_path']['tongue_texture'])
+        node_texture.image = img
+    else : 
+        img = bpy.data.images.load(bpy.context.scene['file_path']['teeth_texture'])
+        node_texture.image = img
+    
+    links = mat.node_tree.links
+    links.new(node_texture.outputs[0], nodes.get("Principled BSDF").inputs[0])
+    
+
                         
+
     
 
 
@@ -188,14 +214,34 @@ class mouth_creation(Operator,AddObjectHelper ):
         
         file_loc = bpy.context.scene['file_path']['mouth_cavity'] 
         bpy.ops.import_scene.obj(filepath=file_loc)
+
+        mouth_cavity = bpy.data.objects["models.001"]
+        lower_jaw = bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"]
+        tongue = bpy.data.objects["tongue_lowres_Mesh.001"]
+        upper_jaw = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]
+
+        #mouthCavityTexturing(lower_jaw,'Lower_jaw_teeth.001')
+        #mouthCavityTexturing(tongue,'125.001')
+        #mouthCavityTexturing(upper_jaw,'Upper_jaw_teeth.001')
+
+
         #구강 선택 후 바운더리 따기
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action = 'DESELECT')
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
-        bpy.data.objects["models.001"].select_set(True)
+        #bpy.ops.mesh.select_all(action = 'DESELECT')
+        bpy.context.view_layer.objects.active = mouth_cavity
+        mouth_cavity.select_set(True)
+
+        bpy.data.materials["DefaultSkin"].node_tree.nodes["Principled BSDF"].inputs[0].default_value = (147/255, 62/255, 73/255,1) #mouth Cavity texture (base color)
+        #252, 97, 86 rgb(223, 98, 80) 147 62 73
         bpy.ops.object.mode_set(mode = 'EDIT')
         bpy.context.object.vertex_groups.new(name="mouth_cavity_boundary")
         bpy.ops.mesh.region_to_loop()
         bpy.ops.object.vertex_group_assign()
+
+
+        
 
 
 
@@ -231,17 +277,16 @@ class mouth_creation(Operator,AddObjectHelper ):
         
         
         # 마스크의 x좌표 길이/mouth cavity의 x좌표 길이 가 scale이 된다
-        mouth_cavity = bpy.data.objects["models.001"]
         scl = (max(mloc)[0]-min(mloc)[0]) / (max(cloc)[0]-min(cloc)[0])
         mouth_cavity.scale = (scl,scl,scl)
-        bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"].scale = (scl,scl,scl)
-        bpy.data.objects["tongue_lowres_Mesh.001"].scale = (scl,scl,scl)   
-        bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"].scale = (scl,scl,scl)
+        lower_jaw.scale = (scl,scl,scl)
+        tongue.scale = (scl,scl,scl)   
+        upper_jaw.scale = (scl,scl,scl)
 
         # mouth cavity의 좌표값이 변화하였으니 갱신해준다 (scale변화로 인해 갱신)
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
-        bpy.data.objects["models.001"].select_set(True)
+        bpy.context.view_layer.objects.active = mouth_cavity
+        mouth_cavity.select_set(True)
         bpy.ops.object.mode_set(mode = 'EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.object.vertex_group_set_active(group=str("mouth_cavity_boundary"))
@@ -253,32 +298,32 @@ class mouth_creation(Operator,AddObjectHelper ):
         # 마스크 입 좌표중 x좌표가 가장 작은 점이 base point가 된다
         
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
-        bpy.data.objects["models.001"].select_set(True)
+        bpy.context.view_layer.objects.active = mouth_cavity
+        mouth_cavity.select_set(True)
         obj = bpy.context.active_object
         obj.location.x += min(mloc)[0]-min(cloc_revised)[0]     #base point의 x좌표 차이만큼 이동시킨다, yz도
         obj.location.y += min(mloc)[1]-min(cloc_revised)[1]
         obj.location.z += min(mloc)[2]-min(cloc_revised)[2]
 
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.context.view_layer.objects.active = bpy.data.objects['Lower_jaw_teeth_Lower_jaw_teeth.001'] # 하악의 위치도 이동
-        bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"].select_set(True)
+        bpy.context.view_layer.objects.active = lower_jaw # 하악의 위치도 이동
+        lower_jaw.select_set(True)
         obj = bpy.context.active_object
         obj.location.x += min(mloc)[0]-min(cloc_revised)[0]
         obj.location.y += min(mloc)[1]-min(cloc_revised)[1]
         obj.location.z += min(mloc)[2]-min(cloc_revised)[2]
 
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.context.view_layer.objects.active = bpy.data.objects['tongue_lowres_Mesh.001']   #혀 이동
-        bpy.data.objects["tongue_lowres_Mesh.001"].select_set(True)
+        bpy.context.view_layer.objects.active = tongue   #혀 이동
+        tongue.select_set(True)
         obj = bpy.context.active_object
         obj.location.x += min(mloc)[0]-min(cloc_revised)[0]
         obj.location.y += min(mloc)[1]-min(cloc_revised)[1]
         obj.location.z += min(mloc)[2]-min(cloc_revised)[2]
 
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.context.view_layer.objects.active = bpy.data.objects['Upper_jaw_teeth_Upper_jaw_teeth.001'] #상악 이동
-        bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"].select_set(True)
+        bpy.context.view_layer.objects.active = upper_jaw #상악 이동
+        upper_jaw.select_set(True)
         obj = bpy.context.active_object
         obj.location.x += min(mloc)[0]-min(cloc_revised)[0]
         obj.location.y += min(mloc)[1]-min(cloc_revised)[1]
@@ -286,8 +331,8 @@ class mouth_creation(Operator,AddObjectHelper ):
 
         # mouth cavity의 좌표값이 변화하였으니 갱신해준다
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
-        bpy.data.objects["models.001"].select_set(True)
+        bpy.context.view_layer.objects.active = mouth_cavity
+        mouth_cavity.select_set(True)
         bpy.ops.object.mode_set(mode = 'EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.object.vertex_group_set_active(group=str("mouth_cavity_boundary"))
@@ -302,30 +347,30 @@ class mouth_creation(Operator,AddObjectHelper ):
         vec = mind[mloc.index(min(mloc))] + mind[mloc.index(max(mloc))]
         bpy.context.scene.cursor.location = vec/2
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        bpy.data.objects["models.001"].select_set(False)
+        mouth_cavity.select_set(False)
         
         
         
-        bpy.context.view_layer.objects.active = bpy.data.objects['Lower_jaw_teeth_Lower_jaw_teeth.001'] # 하악의 위치도 이동
-        bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"].select_set(True)
+        bpy.context.view_layer.objects.active = lower_jaw # 하악의 위치도 이동
+        lower_jaw.select_set(True)
         save_loc_lower = bpy.context.scene.cursor.location
         bpy.context.scene.cursor.location = vec/2
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"].select_set(False)
+        lower_jaw.select_set(False)
 
-        bpy.context.view_layer.objects.active = bpy.data.objects['tongue_lowres_Mesh.001']   #혀 이동
-        bpy.data.objects["tongue_lowres_Mesh.001"].select_set(True)
+        bpy.context.view_layer.objects.active = tongue   #혀 이동
+        tongue.select_set(True)
         save_loc_tongue = bpy.context.scene.cursor.location
         bpy.context.scene.cursor.location = vec/2
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        bpy.data.objects["tongue_lowres_Mesh.001"].select_set(False)
+        tongue.select_set(False)
 
-        bpy.context.view_layer.objects.active = bpy.data.objects['Upper_jaw_teeth_Upper_jaw_teeth.001'] #상악 이동
-        bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"].select_set(True)
+        bpy.context.view_layer.objects.active = upper_jaw #상악 이동
+        upper_jaw.select_set(True)
         save_loc_upper = bpy.context.scene.cursor.location
         bpy.context.scene.cursor.location = vec/2
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"].select_set(False)
+        upper_jaw.select_set(False)
         
         
         #rot 값 생성
@@ -344,78 +389,78 @@ class mouth_creation(Operator,AddObjectHelper ):
 
     
         #rotation
-        bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
-        bpy.data.objects["models.001"].select_set(True)
+        bpy.context.view_layer.objects.active = mouth_cavity
+        mouth_cavity.select_set(True)
         default_ang = bpy.context.object.rotation_euler
         angle = default_ang[0]-a1
         bpy.context.object.rotation_euler[0] = angle
-        bpy.context.view_layer.objects.active = bpy.data.objects['Lower_jaw_teeth_Lower_jaw_teeth.001']
-        bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"].select_set(True)
+        bpy.context.view_layer.objects.active = lower_jaw
+        lower_jaw.select_set(True)
         bpy.context.object.rotation_euler[0] = angle
         
-        bpy.context.view_layer.objects.active = bpy.data.objects['tongue_lowres_Mesh.001']
-        bpy.data.objects["tongue_lowres_Mesh.001"].select_set(True)
+        bpy.context.view_layer.objects.active = tongue
+        tongue.select_set(True)
         #bpy.context.object.rotation_euler[0] = default_ang[0]-a1
         bpy.context.object.rotation_euler[0] = angle
         
-        bpy.context.view_layer.objects.active = bpy.data.objects['Upper_jaw_teeth_Upper_jaw_teeth.001']
-        bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"].select_set(True)
+        bpy.context.view_layer.objects.active = upper_jaw
+        upper_jaw.select_set(True)
         #bpy.context.object.rotation_euler[0] = default_ang[0]-a1
         bpy.context.object.rotation_euler[0] = angle
 
 
         #구강 메시가 튀어나오는 부분이 생겨서 뒤로 민다, 임의값 1만큼
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
-        bpy.data.objects["models.001"].select_set(True)
+        bpy.context.view_layer.objects.active = mouth_cavity
+        mouth_cavity.select_set(True)
         obj = bpy.context.active_object
         obj.location.z -= 0.2
         
         #해제
-        bpy.data.objects["models.001"].select_set(False)
+        mouth_cavity.select_set(False)
         bpy.context.scene['my_obj']['ply'].select_set(False)
-        bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"].select_set(False)
-        bpy.data.objects["tongue_lowres_Mesh.001"].select_set(False)
-        bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"].select_set(False)
+        lower_jaw.select_set(False)
+        tongue.select_set(False)
+        upper_jaw.select_set(False)
 
         
         
         #오리진을 원래 상태로 복구
-        bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
-        bpy.data.objects["models.001"].select_set(True)
+        bpy.context.view_layer.objects.active = mouth_cavity
+        mouth_cavity.select_set(True)
         bpy.context.scene.cursor.location = save_loc
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        bpy.data.objects["models.001"].select_set(False)
+        mouth_cavity.select_set(False)
 
-        bpy.context.view_layer.objects.active = bpy.data.objects['Lower_jaw_teeth_Lower_jaw_teeth.001']
-        bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"].select_set(True)
+        bpy.context.view_layer.objects.active = lower_jaw
+        lower_jaw.select_set(True)
         bpy.context.scene.cursor.location = save_loc_lower
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"].select_set(False)
+        lower_jaw.select_set(False)
         
-        bpy.context.view_layer.objects.active = bpy.data.objects['tongue_lowres_Mesh.001']
-        bpy.data.objects["tongue_lowres_Mesh.001"].select_set(True)
+        bpy.context.view_layer.objects.active = tongue
+        tongue.select_set(True)
         bpy.context.scene.cursor.location = save_loc_tongue
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        bpy.data.objects["tongue_lowres_Mesh.001"].select_set(False)
+        tongue.select_set(False)
         
-        bpy.context.view_layer.objects.active = bpy.data.objects['Upper_jaw_teeth_Upper_jaw_teeth.001']
-        bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"].select_set(True)
+        bpy.context.view_layer.objects.active = upper_jaw
+        upper_jaw.select_set(True)
         bpy.context.scene.cursor.location = save_loc_upper
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"].select_set(False)
+        upper_jaw.select_set(False)
         #해제
-        bpy.data.objects["models.001"].select_set(False)
+        mouth_cavity.select_set(False)
         bpy.context.scene['my_obj']['ply'].select_set(False)
-        bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"].select_set(False)
-        bpy.data.objects["tongue_lowres_Mesh.001"].select_set(False)
-        bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"].select_set(False)
+        lower_jaw.select_set(False)
+        tongue.select_set(False)
+        upper_jaw.select_set(False)
         
         
         #join
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        bpy.context.view_layer.objects.active = bpy.data.objects['models.001']
-        bpy.data.objects["models.001"].select_set(True)
+        bpy.context.view_layer.objects.active = mouth_cavity
+        mouth_cavity.select_set(True)
 
         bpy.context.view_layer.objects.active = bpy.context.scene['my_obj']['ply']
         bpy.context.scene['my_obj']['ply'].select_set(True)
@@ -436,6 +481,10 @@ class mouth_creation(Operator,AddObjectHelper ):
        
         bpy.ops.mesh.bridge_edge_loops()
         
+        mouthCavityTexturing(lower_jaw,'Lower_jaw_teeth.001')
+        mouthCavityTexturing(tongue,'125.001')
+        mouthCavityTexturing(upper_jaw,'Upper_jaw_teeth.001')
+
         
         return {'FINISHED'}
 
