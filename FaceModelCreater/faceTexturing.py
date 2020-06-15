@@ -31,10 +31,11 @@ def texturing():
     material = bpy.data.materials.new("Face")
     material.use_nodes = True
     BSDF_face = material.node_tree.nodes.get('Principled BSDF')
-    BSDF_face.inputs[1].default_value=0.15
+    BSDF_face.inputs[1].default_value=0
     
     dark_rate = 0.2 #Skin stain level
     pore_rate = 0.1 #fiacial pore level
+
     
     #make subsurface color
     TexNoise_sub_face = material.node_tree.nodes.new('ShaderNodeTexNoise')
@@ -49,7 +50,7 @@ def texturing():
     ColorRamp_sub_face.color_ramp.elements[1].position = 1
     ColorRamp_sub_face.location = (-900,0)
     material.node_tree.links.new(ColorRamp_sub_face.inputs[0],TexNoise_sub_face.outputs[0])
-    material.node_tree.links.new(BSDF_face.inputs[3],ColorRamp_sub_face.outputs[0])
+    #material.node_tree.links.new(BSDF_face.inputs[3],ColorRamp_sub_face.outputs[0])
 
     #make base color   
     TexNoise_base_face = material.node_tree.nodes.new('ShaderNodeTexNoise')
@@ -69,14 +70,21 @@ def texturing():
     MixRGB_face = material.node_tree.nodes.new('ShaderNodeMixRGB')
     MixRGB_face.inputs[0].default_value = 0.858333
     MixRGB_face.location = (-300,300)  
+    MixRGB_small_face = material.node_tree.nodes.new('ShaderNodeMixRGB')
+    MixRGB_small_face.inputs[0].default_value = 0.15
+    MixRGB_small_face.location = (-300,600)  
     material.node_tree.links.new(ColorRamp_base_face.inputs[0],TexNoise_base_face.outputs[0])
     material.node_tree.links.new(MixRGB_base_face.inputs[1],ColorRamp_base_face.outputs[0])
     material.node_tree.links.new(MixRGB_face.inputs[2],MixRGB_base_face.outputs[0])
-    material.node_tree.links.new(BSDF_face.inputs[0],MixRGB_face.outputs[0])
-
+    #material.node_tree.links.new(BSDF_face.inputs[0],MixRGB_face.outputs[0])
+    material.node_tree.links.new(MixRGB_small_face.inputs[2],ColorRamp_sub_face.outputs[0])
+    material.node_tree.links.new(MixRGB_small_face.inputs[1],MixRGB_face.outputs[0])
+    material.node_tree.links.new(BSDF_face.inputs[0],MixRGB_small_face.outputs[0])
+                                       
     #make flushing face
     TexCoord_base_right_face = material.node_tree.nodes.new('ShaderNodeTexCoord')
     TexCoord_base_right_face.location = (-1800,900)
+    TexCoord_base_right_face.object = bpy.context.scene['my_obj']['ply']
     Mapping_base_right_face = material.node_tree.nodes.new('ShaderNodeMapping')
     Mapping_base_right_face.inputs[1].default_value[0] = -2.1
     Mapping_base_right_face.inputs[1].default_value[1] = -2.6
@@ -96,6 +104,7 @@ def texturing():
     ColorRamp_base_right_face.location = (-900,900)
     TexCoord_base_left_face = material.node_tree.nodes.new('ShaderNodeTexCoord')
     TexCoord_base_left_face.location = (-1800,600)
+    TexCoord_base_left_face.object =   bpy.context.scene['my_obj']['ply']
     Mapping_base_left_face = material.node_tree.nodes.new('ShaderNodeMapping')
     Mapping_base_left_face.inputs[1].default_value[0] = -0.9
     Mapping_base_left_face.inputs[1].default_value[1] = -2.6
@@ -126,6 +135,9 @@ def texturing():
     material.node_tree.links.new(MixRGB_face.inputs[1],MixRGB_base_left_right_face.outputs[0])        
     
     #make facial pores of face
+    TexCoord_pores_face = material.node_tree.nodes.new('ShaderNodeTexCoord')
+    TexCoord_pores_face.location = (-1500,-300)
+    TexCoord_pores_face.object =   bpy.context.scene['my_obj']['ply']
     TexVoronoi_pores_face = material.node_tree.nodes.new('ShaderNodeTexVoronoi')
     TexVoronoi_pores_face.feature = 'SMOOTH_F1'
     TexVoronoi_pores_face.inputs[2].default_value = 500
@@ -144,9 +156,13 @@ def texturing():
     ColorRamp_roughness_face.color_ramp.elements[1].position = 0.7
     ColorRamp_roughness_face.location = (-500,-150)
     Bump_face = material.node_tree.nodes.new('ShaderNodeBump')
-    Bump_face.inputs[0].default_value = 4
+    #Bump_face.inputs[0].default_value = 4
+    Bump_face.inputs[0].default_value = 0.4
     Bump_face.inputs[1].default_value = 0.1   
     Bump_face.location = (-500,-450)
+    material.node_tree.links.new(TexVoronoi_pores_face.inputs[0], TexCoord_pores_face.outputs[3])
+    material.node_tree.links.new(TexNoise_sub_face.inputs[0], TexCoord_pores_face.outputs[3])
+    material.node_tree.links.new(TexNoise_base_face.inputs[0], TexCoord_pores_face.outputs[3])
     material.node_tree.links.new(ColorRamp_pores_face.inputs[0], TexVoronoi_pores_face.outputs[0])
     material.node_tree.links.new(MixRGB_base_face.inputs[2],ColorRamp_pores_face.outputs[0])
     material.node_tree.links.new(ColorRamp_roughness_face.inputs[0],ColorRamp_pores_face.outputs[0])
@@ -191,7 +207,7 @@ def texturing():
     material_mouth.use_nodes = True
 
     BSDF_mouth = material_mouth.node_tree.nodes.get('Principled BSDF')
-    BSDF_mouth.inputs[1].default_value=0.15
+    BSDF_mouth.inputs[1].default_value=0
 
     f_mouth= open(bpy.context.scene['file_path']['mouth_tex'],"r")
     mouth_R = []
@@ -223,7 +239,7 @@ def texturing():
     ColorRamp_sub_mouth.color_ramp.elements[1].position = 0.9
     ColorRamp_sub_mouth.location = (-300,300)
     material_mouth.node_tree.links.new(ColorRamp_sub_mouth.inputs[0],NoiseTex_sub_mouth.outputs[0])
-    material_mouth.node_tree.links.new(BSDF_mouth.inputs[3],ColorRamp_sub_mouth.outputs[0])
+    #material_mouth.node_tree.links.new(BSDF_mouth.inputs[3],ColorRamp_sub_mouth.outputs[0])
 
     #make Base Color 
     TexCoord_base_mouth = material_mouth.node_tree.nodes.new('ShaderNodeTexCoord')
@@ -246,14 +262,20 @@ def texturing():
     ColorRamp_base_mouth.color_ramp.elements[1].color = (0.322782, 0.0801937, 0.0701032, 1)
     ColorRamp_base_mouth.color_ramp.elements[1].position = 0.05
     ColorRamp_base_mouth.location = (-300,600)
+    MixRGB_base_mouth = material_mouth.node_tree.nodes.new('ShaderNodeMixRGB')
+    MixRGB_base_mouth.inputs[0].default_value = 0.15
+    MixRGB_base_mouth.location=(0,600)
     material_mouth.node_tree.links.new(Mapping_base_mouth.inputs[0],TexCoord_base_mouth.outputs[0])
     material_mouth.node_tree.links.new(TexGradient_base_mouth.inputs[0],Mapping_base_mouth.outputs[0])
     material_mouth.node_tree.links.new(ColorRamp_base_mouth.inputs[0],TexGradient_base_mouth.outputs[1])
-    material_mouth.node_tree.links.new(BSDF_mouth.inputs[0],ColorRamp_base_mouth.outputs[0])
-    
+    #material_mouth.node_tree.links.new(BSDF_mouth.inputs[0],ColorRamp_base_mouth.outputs[0])
+    material_mouth.node_tree.links.new(MixRGB_base_mouth.inputs[1],ColorRamp_base_mouth.outputs[0])
+    material_mouth.node_tree.links.new(MixRGB_base_mouth.inputs[2],ColorRamp_sub_mouth.outputs[0])
+    material_mouth.node_tree.links.new(BSDF_mouth.inputs[0],MixRGB_base_mouth.outputs[0])
     #make Roughness and Normal
-    TexCoord_vertical_normal_mouth = material_mouth.node_tree.nodes.new('ShaderNodeTexCoord')
-    TexCoord_vertical_normal_mouth.location = (-1800,0)
+    TexCoord_normal_mouth = material_mouth.node_tree.nodes.new('ShaderNodeTexCoord')
+    TexCoord_normal_mouth.location = (-1800,0)
+    TexCoord_normal_mouth.object =  bpy.context.scene['my_obj']['ply']
     Mapping_vertical_normal_mouth = material_mouth.node_tree.nodes.new('ShaderNodeMapping')
     Mapping_vertical_normal_mouth.inputs[3].default_value[0] = 5
     Mapping_vertical_normal_mouth.inputs[3].default_value[1] = 1
@@ -271,8 +293,6 @@ def texturing():
     ColorRamp_vertical_normal_mouth.color_ramp.elements[1].color =   (0.0839136, 0.0342137, 0.0297159, 1)
     ColorRamp_vertical_normal_mouth.color_ramp.elements[2].color =   (0, 0, 0, 1)
     ColorRamp_vertical_normal_mouth.location = (-900,0)
-    TexCoord_horizontal_normal_mouth = material_mouth.node_tree.nodes.new('ShaderNodeTexCoord')
-    TexCoord_horizontal_normal_mouth.location = (-1800,-300)
     Mapping_horizontal_normal_mouth = material_mouth.node_tree.nodes.new('ShaderNodeMapping')
     Mapping_horizontal_normal_mouth.inputs[3].default_value[0] = 1
     Mapping_horizontal_normal_mouth.inputs[3].default_value[1] = 8
@@ -288,10 +308,10 @@ def texturing():
     ColorRamp_horizontal_normal_mouth.color_ramp.elements[1].color =   (0.242281, 0.0975874, 0.0843762, 1)
     ColorRamp_horizontal_normal_mouth.color_ramp.elements[1].position = 1
     ColorRamp_horizontal_normal_mouth.location = (-900,-300)
-    material_mouth.node_tree.links.new(Mapping_vertical_normal_mouth.inputs[0], TexCoord_vertical_normal_mouth.outputs[0])
+    material_mouth.node_tree.links.new(Mapping_vertical_normal_mouth.inputs[0], TexCoord_normal_mouth.outputs[0])
     material_mouth.node_tree.links.new(TexNoise_vertical_normal_mouth.inputs[0],Mapping_vertical_normal_mouth.outputs[0])
     material_mouth.node_tree.links.new(ColorRamp_vertical_normal_mouth.inputs[0],TexNoise_vertical_normal_mouth.outputs[0])
-    material_mouth.node_tree.links.new(Mapping_horizontal_normal_mouth.inputs[0], TexCoord_horizontal_normal_mouth.outputs[0])
+    material_mouth.node_tree.links.new(Mapping_horizontal_normal_mouth.inputs[0], TexCoord_normal_mouth.outputs[0])
     material_mouth.node_tree.links.new(TexNoise_horizontal_normal_mouth.inputs[0],Mapping_horizontal_normal_mouth.outputs[0])
     material_mouth.node_tree.links.new(ColorRamp_horizontal_normal_mouth.inputs[0],TexNoise_horizontal_normal_mouth.outputs[0])
     
@@ -305,7 +325,8 @@ def texturing():
     ColorRamp_normal_mouth.color_ramp.elements[1].position = 0.11
     ColorRamp_normal_mouth.location = (-300,0)
     Bump_mouth = material_mouth.node_tree.nodes.new('ShaderNodeBump')
-    Bump_mouth.inputs[0].default_value = 30
+    #Bump_mouth.inputs[0].default_value = 30
+    Bump_mouth.inputs[0].default_value = 0.3
     Bump_mouth.inputs[1].default_value = 0.1
     Bump_mouth.location = (-300,-300)
     material_mouth.node_tree.links.new(MixRGB_normal_mouth.inputs[1], ColorRamp_vertical_normal_mouth.outputs[0])
