@@ -27,6 +27,8 @@ class Hair_styler(bpy.types.Operator):
         "eye_brow_l",
         "mustache",
         "beard",
+        "eye_left_boundary",
+        "eye_right_boundary"
         #"hair"
     ]
     NAME_HEAD = "seok_f"
@@ -47,14 +49,18 @@ class Hair_styler(bpy.types.Operator):
             head = bpy.context.view_layer.objects.active
         option = get_styling_option(STYLER_MODE, head)
         utils_add_particle_system(option)
+
         if option["style_path"] != "":
             preset = load_preset(option)
         else:
             preset = generate_style(option, scalp_tris=self.get_scalp_tris(option, head)) # TODO
-
-        style = self.generate_custom_style(option, preset)
+        
         self.init_styling(option)
-        self.comb(option, style)
+        if option["styling_process"] == True:
+            style = self.generate_custom_style(option, preset)
+            self.comb(option, style)
+        else:
+            self.comb(option, preset)
         self.finalize_styling(option)
 
 
