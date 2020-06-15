@@ -565,7 +565,8 @@ def duplicate_obj(target):
     
     return new_obj
 
-def delete_object(target) : 
+def delete_object(target) :
+    
     bpy.ops.object.mode_set(mode = 'OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
     target.select_set(True) # Blender 2.8x
