@@ -60,9 +60,13 @@ class main_Operator(bpy.types.Operator):
         bpy.ops.mesh.add_eyes()
         bpy.ops.mesh.create_region_group()
 
-        bpy.ops.mesh.apply_texturing()
+        ##### make philtrum
+        bpy.ops.mesh.create_philtrum()
+          
         bpy.ops.mesh.nostrill()
         bpy.ops.mesh.mouth()
+
+        
 
         #transformation reset #################################
         

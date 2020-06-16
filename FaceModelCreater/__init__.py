@@ -31,8 +31,9 @@ from . mouthCapacity import mouth_creation
 from . createEyes import MESH_OT_add_eyes
 from . nostril import nostril
 from . faceTexturing import MESH_OT_apply_texturing
+from . createPhiltrum import MESH_OT_create_philtrum
 
-classes = (main_Operator, Model_PT_Panel, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, nostril, MESH_OT_apply_texturing)
+classes = (main_Operator, Model_PT_Panel, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, nostril, MESH_OT_apply_texturing, MESH_OT_create_philtrum)
 
 
 register,unregister = bpy.utils.register_classes_factory(classes)

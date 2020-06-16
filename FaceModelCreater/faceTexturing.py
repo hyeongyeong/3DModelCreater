@@ -7,11 +7,127 @@ class MESH_OT_apply_texturing(bpy.types.Operator):
 
     
     def execute(self, context):
-       texturing()
+       texturing(self,context)
        return {'FINISHED'}
 
+def create_test_group(context,operator,group_name):
+         ###############################
+        bpy.context.scene.use_nodes = True
+        
+        Face_Skin_Group = bpy.data.node_groups.new(group_name,'ShaderNodeTree')
 
-def texturing():
+        BSDF_face = Face_Skin_Group.nodes.new('ShaderNodeBsdfPrincipled')
+        BSDF_face.inputs[1].default_value=0
+
+        #make subsurface color
+        TexNoise_sub_face = Face_Skin_Group.nodes.new('ShaderNodeTexNoise')
+        TexNoise_sub_face.noise_dimensions = '2D'
+        TexNoise_sub_face.inputs[2].default_value = 1
+        TexNoise_sub_face.inputs[3].default_value = 2
+        TexNoise_sub_face.location = (-1200,0)
+        ColorRamp_sub_face = Face_Skin_Group.nodes.new('ShaderNodeValToRGB')
+        ColorRamp_sub_face.color_ramp.elements[0].color = (0.0783149, 0, 0, 1)
+        ColorRamp_sub_face.color_ramp.elements[0].position = 0
+        ColorRamp_sub_face.color_ramp.elements[1].color = (0.75, 0.068, 0.073, 1)
+        ColorRamp_sub_face.color_ramp.elements[1].position = 1
+        ColorRamp_sub_face.location = (-900,0)
+        Face_Skin_Group.links.new(ColorRamp_sub_face.inputs[0],TexNoise_sub_face.outputs[0])
+        #material.node_tree.links.new(BSDF_face.inputs[3],ColorRamp_sub_face.outputs[0])
+
+        #make base color   
+        TexNoise_base_face = Face_Skin_Group.nodes.new('ShaderNodeTexNoise')
+        TexNoise_base_face.inputs[2].default_value = 1000
+        TexNoise_base_face.inputs[3].default_value = 200
+        TexNoise_base_face.location = (-1200,300)
+        ColorRamp_base_face = Face_Skin_Group.nodes.new('ShaderNodeValToRGB')
+        #ColorRamp_base_face.color_ramp.elements[0].color = (face_R[10]*dark_rate, face_G[10]*dark_rate, face_B[10]*dark_rate, 1)
+        ColorRamp_base_face.color_ramp.elements[0].color =(0.433448, 0.173237, 0.139672, 1)
+        ColorRamp_base_face.color_ramp.elements[0].position = 0
+        #ColorRamp_base_face.color_ramp.elements[1].color = (face_R[10], face_G[10], face_B[10], 1)
+        ColorRamp_base_face.color_ramp.elements[1].color = (0.570909, 0.183189, 0.145607, 1)
+        ColorRamp_base_face.color_ramp.elements[1].position = 1
+        ColorRamp_base_face.location = (-900,300)
+        MixRGB_base_face = Face_Skin_Group.nodes.new('ShaderNodeMixRGB')
+        MixRGB_base_face.location = (-600,300)
+        MixRGB_face = Face_Skin_Group.nodes.new('ShaderNodeMixRGB')
+        MixRGB_face.inputs[0].default_value = 0.858333
+        MixRGB_face.location = (-450,600)  
+        MixRGB_small_face = Face_Skin_Group.nodes.new('ShaderNodeMixRGB')
+        MixRGB_small_face.inputs[0].default_value = 0.15
+        MixRGB_small_face.location = (-150,300)  
+        Face_Skin_Group.links.new(ColorRamp_base_face.inputs[0],TexNoise_base_face.outputs[0])
+        Face_Skin_Group.links.new(MixRGB_base_face.inputs[1],ColorRamp_base_face.outputs[0])
+        Face_Skin_Group.links.new(MixRGB_face.inputs[2],MixRGB_base_face.outputs[0])
+        Face_Skin_Group.links.new(MixRGB_small_face.inputs[2],ColorRamp_sub_face.outputs[0])
+        Face_Skin_Group.links.new(MixRGB_small_face.inputs[1],MixRGB_face.outputs[0])
+        Face_Skin_Group.links.new(BSDF_face.inputs[0],MixRGB_small_face.outputs[0])
+                                           
+        #make facial pores of face
+        TexCoord_pores_face = Face_Skin_Group.nodes.new('ShaderNodeTexCoord')
+        TexCoord_pores_face.location = (-1500,-300)
+        TexCoord_pores_face.object =   bpy.context.scene['my_obj']['ply']
+        TexVoronoi_pores_face = Face_Skin_Group.nodes.new('ShaderNodeTexVoronoi')
+        TexVoronoi_pores_face.feature = 'SMOOTH_F1'
+        TexVoronoi_pores_face.inputs[2].default_value = 500
+        TexVoronoi_pores_face.distance = 'CHEBYCHEV'
+        TexVoronoi_pores_face.location = (-1200,-300)
+        ColorRamp_pores_face = Face_Skin_Group.nodes.new('ShaderNodeValToRGB')
+        ColorRamp_pores_face.color_ramp.elements[0].color =  (0.517641, 0.294275, 0.210766, 1)
+        ColorRamp_pores_face.color_ramp.elements[0].position = 0
+        ColorRamp_pores_face.color_ramp.elements[1].color =   (0.617207, 0.346704, 0.246201, 1)
+        ColorRamp_pores_face.color_ramp.elements[1].position = 1        
+        ColorRamp_pores_face.location = (-900,-300)
+        ColorRamp_roughness_face = Face_Skin_Group.nodes.new('ShaderNodeValToRGB')
+        ColorRamp_roughness_face.color_ramp.elements[0].color = (1, 1, 1, 1)
+        ColorRamp_roughness_face.color_ramp.elements[0].position = 0.1
+        ColorRamp_roughness_face.color_ramp.elements[1].color = (0, 0, 0, 1)
+        ColorRamp_roughness_face.color_ramp.elements[1].position = 0.7
+        ColorRamp_roughness_face.location = (-500,-150)
+        Bump_face = Face_Skin_Group.nodes.new('ShaderNodeBump')
+        #Bump_face.inputs[0].default_value = 4
+        Bump_face.inputs[0].default_value = 0.4
+        Bump_face.inputs[1].default_value = 0.1   
+        Bump_face.location = (-500,-450)
+        Face_Skin_Group.links.new(TexVoronoi_pores_face.inputs[0], TexCoord_pores_face.outputs[3])
+        Face_Skin_Group.links.new(TexNoise_sub_face.inputs[0], TexCoord_pores_face.outputs[3])
+        Face_Skin_Group.links.new(TexNoise_base_face.inputs[0], TexCoord_pores_face.outputs[3])
+        Face_Skin_Group.links.new(ColorRamp_pores_face.inputs[0], TexVoronoi_pores_face.outputs[0])
+        Face_Skin_Group.links.new(MixRGB_base_face.inputs[2],ColorRamp_pores_face.outputs[0])
+        Face_Skin_Group.links.new(ColorRamp_roughness_face.inputs[0],ColorRamp_pores_face.outputs[0])
+        Face_Skin_Group.links.new(Bump_face.inputs[2],ColorRamp_pores_face.outputs[0])
+        Face_Skin_Group.links.new(BSDF_face.inputs[7],ColorRamp_roughness_face.outputs[0])
+        Face_Skin_Group.links.new(BSDF_face.inputs[19], Bump_face.outputs[0])
+        
+        #Improving shading effect performance
+        Glossy_BSDF = Face_Skin_Group.nodes.new('ShaderNodeBsdfGlossy')
+        Glossy_BSDF.location=(0,-300)
+        Mix_shader = Face_Skin_Group.nodes.new('ShaderNodeMixShader')
+        Mix_shader.location=(300,300)
+        Fresnel = Face_Skin_Group.nodes.new('ShaderNodeFresnel')
+        Fresnel.location=(0,500)
+        Fresnel.inputs[0].default_value=1
+        Mix_shader_out = Face_Skin_Group.nodes.new('ShaderNodeMixShader')
+        Mix_shader_out.location=(600,0)
+        Mix_shader_out.inputs[0].default_value=0.1
+        Translucent_BSDF =  Face_Skin_Group.nodes.new('ShaderNodeBsdfTranslucent')
+        Translucent_BSDF.location=(300,0)
+        Face_Skin_Group.links.new(Mix_shader.inputs[0], Fresnel.outputs[0])
+        Face_Skin_Group.links.new(Mix_shader.inputs[1],BSDF_face.outputs[0])
+        Face_Skin_Group.links.new(Mix_shader.inputs[2],Glossy_BSDF.outputs[0])
+        Face_Skin_Group.links.new(Mix_shader_out.inputs[1],Mix_shader.outputs[0])
+        Face_Skin_Group.links.new(Mix_shader_out.inputs[2],Translucent_BSDF.outputs[0])
+  
+        Group_input = Face_Skin_Group.nodes.new('NodeGroupInput')
+        Group_input.location=(-800,600)
+        Group_output = Face_Skin_Group.nodes.new('NodeGroupOutput')
+        Group_output.location=(900,000)
+        Face_Skin_Group.links.new(MixRGB_face.inputs[0], Group_input.outputs[0])
+        Face_Skin_Group.links.new(MixRGB_face.inputs[1], Group_input.outputs[1])
+        Face_Skin_Group.links.new(Group_output.inputs[0],Mix_shader_out.outputs[0])
+
+        return Face_Skin_Group
+
+def texturing(self,context):
     objs = bpy.context.scene['my_obj']['ply'].data 
     f_face= open(bpy.context.scene['file_path']['skin_tex'],"r")
     face_R = []
@@ -28,172 +144,35 @@ def texturing():
         face_B.append(float(split_face[2])/255)
     f_face.close()    
     
+    #make skin texture group
+    group_face_texture=create_test_group(self,context,'face_texture')
 
-
-    #### body ########
+    ########### body ###############
     material_body = bpy.data.materials.new("Body")
     material_body.use_nodes = True
-    BSDF_body = material_body.node_tree.nodes.get('Principled BSDF')
-    BSDF_body.inputs[1].default_value=0
-    
-    dark_rate = 0.2 #Skin stain level
-    pore_rate = 0.1 #fiacial pore level
 
-    
-    #make subsurface color
-    TexNoise_sub_body = material_body.node_tree.nodes.new('ShaderNodeTexNoise')
-    TexNoise_sub_body.noise_dimensions = '2D'
-    TexNoise_sub_body.inputs[2].default_value = 1
-    TexNoise_sub_body.inputs[3].default_value = 2
-    TexNoise_sub_body.location = (-1200,0)
-    ColorRamp_sub_body = material_body.node_tree.nodes.new('ShaderNodeValToRGB')
-    ColorRamp_sub_body.color_ramp.elements[0].color = (0.0783149, 0, 0, 1)
-    ColorRamp_sub_body.color_ramp.elements[0].position = 0
-    ColorRamp_sub_body.color_ramp.elements[1].color = (0.75, 0.068, 0.073, 1)
-    ColorRamp_sub_body.color_ramp.elements[1].position = 1
-    ColorRamp_sub_body.location = (-900,0)
-    material_body.node_tree.links.new(ColorRamp_sub_body.inputs[0],TexNoise_sub_body.outputs[0])
-    #material.node_tree.links.new(BSDF_face.inputs[3],ColorRamp_sub_body.outputs[0])
-
-    #make base color   
-    TexNoise_base_body = material_body.node_tree.nodes.new('ShaderNodeTexNoise')
-    TexNoise_base_body.inputs[2].default_value = 1000
-    TexNoise_base_body.inputs[3].default_value = 200
-    TexNoise_base_body.location = (-1200,300)
-    ColorRamp_base_body = material_body.node_tree.nodes.new('ShaderNodeValToRGB')
-    #ColorRamp_base_body.color_ramp.elements[0].color = (face_R[10]*dark_rate, face_G[10]*dark_rate, face_B[10]*dark_rate, 1)
-    ColorRamp_base_body.color_ramp.elements[0].color =(0.433448, 0.173237, 0.139672, 1)
-    ColorRamp_base_body.color_ramp.elements[0].position = 0
-    #ColorRamp_base_body.color_ramp.elements[1].color = (face_R[10], face_G[10], face_B[10], 1)
-    ColorRamp_base_body.color_ramp.elements[1].color = (0.570909, 0.183189, 0.145607, 1)
-    ColorRamp_base_body.color_ramp.elements[1].position = 1
-    ColorRamp_base_body.location = (-900,300)
-    MixRGB_base_body = material_body.node_tree.nodes.new('ShaderNodeMixRGB')
-    MixRGB_base_body.location = (-600,300)
-    MixRGB_small_body = material_body.node_tree.nodes.new('ShaderNodeMixRGB')
-    MixRGB_small_body.inputs[0].default_value = 0.15
-    MixRGB_small_body.location = (-300,600)  
-    material_body.node_tree.links.new(ColorRamp_base_body.inputs[0],TexNoise_base_body.outputs[0])
-    material_body.node_tree.links.new(MixRGB_base_body.inputs[1],ColorRamp_base_body.outputs[0])
-    #material_body.node_tree.links.new(BSDF_face.inputs[0],MixRGB_body.outputs[0])
-    material_body.node_tree.links.new(MixRGB_small_body.inputs[2],ColorRamp_sub_body.outputs[0])
-    material_body.node_tree.links.new(MixRGB_small_body.inputs[1],MixRGB_base_body.outputs[0])
-    material_body.node_tree.links.new(BSDF_body.inputs[0],MixRGB_small_body.outputs[0])
- 
-    #make facial pores of face
-    TexCoord_pores_body = material_body.node_tree.nodes.new('ShaderNodeTexCoord')
-    TexCoord_pores_body.location = (-1500,-300)
-    TexCoord_pores_body.object =   bpy.context.scene['my_obj']['ply']
-    TexVoronoi_pores_body = material_body.node_tree.nodes.new('ShaderNodeTexVoronoi')
-    TexVoronoi_pores_body.feature = 'SMOOTH_F1'
-    TexVoronoi_pores_body.inputs[2].default_value = 500
-    TexVoronoi_pores_body.distance = 'CHEBYCHEV'
-    TexVoronoi_pores_body.location = (-1200,-300)
-    ColorRamp_pores_body = material_body.node_tree.nodes.new('ShaderNodeValToRGB')
-    ColorRamp_pores_body.color_ramp.elements[0].color =  (0.517641, 0.294275, 0.210766, 1)
-    ColorRamp_pores_body.color_ramp.elements[0].position = 0
-    ColorRamp_pores_body.color_ramp.elements[1].color =   (0.617207, 0.346704, 0.246201, 1)
-    ColorRamp_pores_body.color_ramp.elements[1].position = 1        
-    ColorRamp_pores_body.location = (-900,-300)
-    ColorRamp_roughness_body = material_body.node_tree.nodes.new('ShaderNodeValToRGB')
-    ColorRamp_roughness_body.color_ramp.elements[0].color = (1, 1, 1, 1)
-    ColorRamp_roughness_body.color_ramp.elements[0].position = 0.1
-    ColorRamp_roughness_body.color_ramp.elements[1].color = (0, 0, 0, 1)
-    ColorRamp_roughness_body.color_ramp.elements[1].position = 0.7
-    ColorRamp_roughness_body.location = (-500,-150)
-    Bump_body = material_body.node_tree.nodes.new('ShaderNodeBump')
-    #Bump_body.inputs[0].default_value = 4
-    Bump_body.inputs[0].default_value = 0.4
-    Bump_body.inputs[1].default_value = 0.1   
-    Bump_body.location = (-500,-450)
-    material_body.node_tree.links.new(TexVoronoi_pores_body.inputs[0], TexCoord_pores_body.outputs[3])
-    material_body.node_tree.links.new(TexNoise_sub_body.inputs[0], TexCoord_pores_body.outputs[3])
-    material_body.node_tree.links.new(TexNoise_base_body.inputs[0], TexCoord_pores_body.outputs[3])
-    material_body.node_tree.links.new(ColorRamp_pores_body.inputs[0], TexVoronoi_pores_body.outputs[0])
-    material_body.node_tree.links.new(MixRGB_base_body.inputs[2],ColorRamp_pores_body.outputs[0])
-    material_body.node_tree.links.new(ColorRamp_roughness_body.inputs[0],ColorRamp_pores_body.outputs[0])
-    material_body.node_tree.links.new(Bump_body.inputs[2],ColorRamp_pores_body.outputs[0])
-    material_body.node_tree.links.new(BSDF_body.inputs[7],ColorRamp_roughness_body.outputs[0])
-    material_body.node_tree.links.new(BSDF_body.inputs[19], Bump_body.outputs[0])
-    
-    #Improving shading effect performance
-    Glossy_BSDF_body = material_body.node_tree.nodes.new('ShaderNodeBsdfGlossy')
-    Glossy_BSDF_body.location=(0,-300)
-    Mix_shader_body = material_body.node_tree.nodes.new('ShaderNodeMixShader')
-    Mix_shader_body.location=(300,300)
-    Fresnel_body = material_body.node_tree.nodes.new('ShaderNodeFresnel')
-    Fresnel_body.location=(0,500)
-    Fresnel_body.inputs[0].default_value=1
-    Mix_shader_out_body = material_body.node_tree.nodes.new('ShaderNodeMixShader')
-    Mix_shader_out_body.location=(600,0)
-    Mix_shader_out_body.inputs[0].default_value=0.1
-    Translucent_BSDF_body =  material_body.node_tree.nodes.new('ShaderNodeBsdfTranslucent')
-    Translucent_BSDF_body.location=(300,0)
+    skin_texture =  material_body.node_tree.nodes.new('ShaderNodeGroup')
+    skin_texture.node_tree = bpy.data.node_groups[group_face_texture.name]
+    skin_texture.location = (600,0)
+    skin_texture.inputs[0].default_value = 1
     Output_body = material_body.node_tree.nodes.get('Material Output')
     Output_body.location = (900,0)
-    material_body.node_tree.links.new(Mix_shader_body.inputs[0], Fresnel_body.outputs[0])
-    material_body.node_tree.links.new(Mix_shader_body.inputs[1],BSDF_body.outputs[0])
-    material_body.node_tree.links.new(Mix_shader_body.inputs[2],Glossy_BSDF_body.outputs[0])
-    material_body.node_tree.links.new(Mix_shader_out_body.inputs[1],Mix_shader_body.outputs[0])
-    material_body.node_tree.links.new(Mix_shader_out_body.inputs[2],Translucent_BSDF_body.outputs[0])
-    material_body.node_tree.links.new(Output_body.inputs[0], Mix_shader_out_body.outputs[0])
-
+    material_body.node_tree.links.new(Output_body.inputs[0], skin_texture.outputs[0])
+    
     bpy.context.object.active_material = material_body
 
-    #######face color ####################
+    ##############face ####################
     material = bpy.data.materials.new("Face")
     material.use_nodes = True
-    BSDF_face = material.node_tree.nodes.get('Principled BSDF')
-    BSDF_face.inputs[1].default_value=0
-    
-    dark_rate = 0.2 #Skin stain level
-    pore_rate = 0.1 #fiacial pore level
 
-    
-    #make subsurface color
-    TexNoise_sub_face = material.node_tree.nodes.new('ShaderNodeTexNoise')
-    TexNoise_sub_face.noise_dimensions = '2D'
-    TexNoise_sub_face.inputs[2].default_value = 1
-    TexNoise_sub_face.inputs[3].default_value = 2
-    TexNoise_sub_face.location = (-1200,0)
-    ColorRamp_sub_face = material.node_tree.nodes.new('ShaderNodeValToRGB')
-    ColorRamp_sub_face.color_ramp.elements[0].color = (0.0783149, 0, 0, 1)
-    ColorRamp_sub_face.color_ramp.elements[0].position = 0
-    ColorRamp_sub_face.color_ramp.elements[1].color = (0.75, 0.068, 0.073, 1)
-    ColorRamp_sub_face.color_ramp.elements[1].position = 1
-    ColorRamp_sub_face.location = (-900,0)
-    material.node_tree.links.new(ColorRamp_sub_face.inputs[0],TexNoise_sub_face.outputs[0])
-    #material.node_tree.links.new(BSDF_face.inputs[3],ColorRamp_sub_face.outputs[0])
+    skin_texture_face =  material.node_tree.nodes.new('ShaderNodeGroup')
+    skin_texture_face.node_tree = bpy.data.node_groups[group_face_texture.name]
+    skin_texture_face.location = (600,0)
+    skin_texture_face.inputs[0].default_value = 0.858333
+    Output_body = material.node_tree.nodes.get('Material Output')
+    Output_body.location = (900,0)
+    material.node_tree.links.new(Output_body.inputs[0], skin_texture_face.outputs[0])
 
-    #make base color   
-    TexNoise_base_face = material.node_tree.nodes.new('ShaderNodeTexNoise')
-    TexNoise_base_face.inputs[2].default_value = 1000
-    TexNoise_base_face.inputs[3].default_value = 200
-    TexNoise_base_face.location = (-1200,300)
-    ColorRamp_base_face = material.node_tree.nodes.new('ShaderNodeValToRGB')
-    #ColorRamp_base_face.color_ramp.elements[0].color = (face_R[10]*dark_rate, face_G[10]*dark_rate, face_B[10]*dark_rate, 1)
-    ColorRamp_base_face.color_ramp.elements[0].color =(0.433448, 0.173237, 0.139672, 1)
-    ColorRamp_base_face.color_ramp.elements[0].position = 0
-    #ColorRamp_base_face.color_ramp.elements[1].color = (face_R[10], face_G[10], face_B[10], 1)
-    ColorRamp_base_face.color_ramp.elements[1].color = (0.570909, 0.183189, 0.145607, 1)
-    ColorRamp_base_face.color_ramp.elements[1].position = 1
-    ColorRamp_base_face.location = (-900,300)
-    MixRGB_base_face = material.node_tree.nodes.new('ShaderNodeMixRGB')
-    MixRGB_base_face.location = (-600,300)
-    MixRGB_face = material.node_tree.nodes.new('ShaderNodeMixRGB')
-    MixRGB_face.inputs[0].default_value = 0.858333
-    MixRGB_face.location = (-300,300)  
-    MixRGB_small_face = material.node_tree.nodes.new('ShaderNodeMixRGB')
-    MixRGB_small_face.inputs[0].default_value = 0.15
-    MixRGB_small_face.location = (-300,600)  
-    material.node_tree.links.new(ColorRamp_base_face.inputs[0],TexNoise_base_face.outputs[0])
-    material.node_tree.links.new(MixRGB_base_face.inputs[1],ColorRamp_base_face.outputs[0])
-    material.node_tree.links.new(MixRGB_face.inputs[2],MixRGB_base_face.outputs[0])
-    #material.node_tree.links.new(BSDF_face.inputs[0],MixRGB_face.outputs[0])
-    material.node_tree.links.new(MixRGB_small_face.inputs[2],ColorRamp_sub_face.outputs[0])
-    material.node_tree.links.new(MixRGB_small_face.inputs[1],MixRGB_face.outputs[0])
-    material.node_tree.links.new(BSDF_face.inputs[0],MixRGB_small_face.outputs[0])
-                                       
     #make flushing face
     TexCoord_base_right_face = material.node_tree.nodes.new('ShaderNodeTexCoord')
     TexCoord_base_right_face.location = (-1800,900)
@@ -245,76 +224,18 @@ def texturing():
     material.node_tree.links.new(TexGradient_base_left_face.inputs[0],Mapping_base_left_face.outputs[0])
     material.node_tree.links.new(ColorRamp_base_left_face.inputs[0],TexGradient_base_left_face.outputs[1])
     material.node_tree.links.new(MixRGB_base_left_right_face.inputs[2],ColorRamp_base_left_face.outputs[0])
-    material.node_tree.links.new(MixRGB_face.inputs[1],MixRGB_base_left_right_face.outputs[0])        
-    
-    #make facial pores of face
-    TexCoord_pores_face = material.node_tree.nodes.new('ShaderNodeTexCoord')
-    TexCoord_pores_face.location = (-1500,-300)
-    TexCoord_pores_face.object =   bpy.context.scene['my_obj']['ply']
-    TexVoronoi_pores_face = material.node_tree.nodes.new('ShaderNodeTexVoronoi')
-    TexVoronoi_pores_face.feature = 'SMOOTH_F1'
-    TexVoronoi_pores_face.inputs[2].default_value = 500
-    TexVoronoi_pores_face.distance = 'CHEBYCHEV'
-    TexVoronoi_pores_face.location = (-1200,-300)
-    ColorRamp_pores_face = material.node_tree.nodes.new('ShaderNodeValToRGB')
-    ColorRamp_pores_face.color_ramp.elements[0].color =  (0.517641, 0.294275, 0.210766, 1)
-    ColorRamp_pores_face.color_ramp.elements[0].position = 0
-    ColorRamp_pores_face.color_ramp.elements[1].color =   (0.617207, 0.346704, 0.246201, 1)
-    ColorRamp_pores_face.color_ramp.elements[1].position = 1        
-    ColorRamp_pores_face.location = (-900,-300)
-    ColorRamp_roughness_face = material.node_tree.nodes.new('ShaderNodeValToRGB')
-    ColorRamp_roughness_face.color_ramp.elements[0].color = (1, 1, 1, 1)
-    ColorRamp_roughness_face.color_ramp.elements[0].position = 0.1
-    ColorRamp_roughness_face.color_ramp.elements[1].color = (0, 0, 0, 1)
-    ColorRamp_roughness_face.color_ramp.elements[1].position = 0.7
-    ColorRamp_roughness_face.location = (-500,-150)
-    Bump_face = material.node_tree.nodes.new('ShaderNodeBump')
-    #Bump_face.inputs[0].default_value = 4
-    Bump_face.inputs[0].default_value = 0.4
-    Bump_face.inputs[1].default_value = 0.1   
-    Bump_face.location = (-500,-450)
-    material.node_tree.links.new(TexVoronoi_pores_face.inputs[0], TexCoord_pores_face.outputs[3])
-    material.node_tree.links.new(TexNoise_sub_face.inputs[0], TexCoord_pores_face.outputs[3])
-    material.node_tree.links.new(TexNoise_base_face.inputs[0], TexCoord_pores_face.outputs[3])
-    material.node_tree.links.new(ColorRamp_pores_face.inputs[0], TexVoronoi_pores_face.outputs[0])
-    material.node_tree.links.new(MixRGB_base_face.inputs[2],ColorRamp_pores_face.outputs[0])
-    material.node_tree.links.new(ColorRamp_roughness_face.inputs[0],ColorRamp_pores_face.outputs[0])
-    material.node_tree.links.new(Bump_face.inputs[2],ColorRamp_pores_face.outputs[0])
-    material.node_tree.links.new(BSDF_face.inputs[7],ColorRamp_roughness_face.outputs[0])
-    material.node_tree.links.new(BSDF_face.inputs[19], Bump_face.outputs[0])
-    
-    #Improving shading effect performance
-    Glossy_BSDF = material.node_tree.nodes.new('ShaderNodeBsdfGlossy')
-    Glossy_BSDF.location=(0,-300)
-    Mix_shader = material.node_tree.nodes.new('ShaderNodeMixShader')
-    Mix_shader.location=(300,300)
-    Fresnel = material.node_tree.nodes.new('ShaderNodeFresnel')
-    Fresnel.location=(0,500)
-    Fresnel.inputs[0].default_value=1
-    Mix_shader_out = material.node_tree.nodes.new('ShaderNodeMixShader')
-    Mix_shader_out.location=(600,0)
-    Mix_shader_out.inputs[0].default_value=0.1
-    Translucent_BSDF =  material.node_tree.nodes.new('ShaderNodeBsdfTranslucent')
-    Translucent_BSDF.location=(300,0)
-    Output = material.node_tree.nodes.get('Material Output')
-    Output.location = (900,0)
-    material.node_tree.links.new(Mix_shader.inputs[0], Fresnel.outputs[0])
-    material.node_tree.links.new(Mix_shader.inputs[1],BSDF_face.outputs[0])
-    material.node_tree.links.new(Mix_shader.inputs[2],Glossy_BSDF.outputs[0])
-    material.node_tree.links.new(Mix_shader_out.inputs[1],Mix_shader.outputs[0])
-    material.node_tree.links.new(Mix_shader_out.inputs[2],Translucent_BSDF.outputs[0])
-    material.node_tree.links.new(Output.inputs[0], Mix_shader_out.outputs[0])
+    material.node_tree.links.new(skin_texture_face.inputs[1],MixRGB_base_left_right_face.outputs[0])        
 
     bpy.context.object.active_material_index = 1
     bpy.context.object.active_material = material
 
+    ############### mouth ################
     #select mouth area
     bpy.ops.object.mode_set(mode = 'EDIT')    
     bpy.ops.mesh.select_all(action='DESELECT')
     bpy.ops.object.vertex_group_set_active(group=str("lips"))
     bpy.ops.object.vertex_group_select()
 
-    ######## mouth color #########
     bpy.ops.object.material_slot_add()
 
     material_mouth  = bpy.data.materials.new("Mouth")
@@ -356,14 +277,19 @@ def texturing():
     #material_mouth.node_tree.links.new(BSDF_mouth.inputs[3],ColorRamp_sub_mouth.outputs[0])
 
     #make Base Color 
+    Attribute_base_mouth =  material_mouth.node_tree.nodes.new('ShaderNodeAttribute')
+    Attribute_base_mouth.location = (-1200,800)
+    Attribute_base_mouth.attribute_name = "lips"
+    Vectoradd_base_mouth =  material_mouth.node_tree.nodes.new('ShaderNodeVectorMath')
+    Vectoradd_base_mouth.inputs[0].default_value = (0,3.8,0)
+    Vectoradd_base_mouth.location = (-900,800)
     TexCoord_base_mouth = material_mouth.node_tree.nodes.new('ShaderNodeTexCoord')
     TexCoord_base_mouth.location = (-1200,600)
+    TexCoord_base_mouth.object =  bpy.context.scene['my_obj']['ply']
     Mapping_base_mouth = material_mouth.node_tree.nodes.new('ShaderNodeMapping')
-    Mapping_base_mouth.inputs[1].default_value[0] = -1.5
-    Mapping_base_mouth.inputs[1].default_value[1] = -1.1
-    Mapping_base_mouth.inputs[3].default_value[0] = 3
-    Mapping_base_mouth.inputs[3].default_value[1] = 4.9
-    Mapping_base_mouth.inputs[3].default_value[2] = 1.1
+    Mapping_base_mouth.inputs[3].default_value[0] = 0
+    Mapping_base_mouth.inputs[3].default_value[1] = 0.1
+    Mapping_base_mouth.inputs[3].default_value[2] = 0
     Mapping_base_mouth.location = (-900,600)
     TexGradient_base_mouth = material_mouth.node_tree.nodes.new('ShaderNodeTexGradient')
     TexGradient_base_mouth.gradient_type = 'SPHERICAL'   
@@ -374,12 +300,14 @@ def texturing():
     ColorRamp_base_mouth.color_ramp.elements[0].position = 0.0
     #ColorRamp_base_mouth.color_ramp.elements[1].color = (mouth_R[40], mouth_G[40], mouth_B[40], 1)
     ColorRamp_base_mouth.color_ramp.elements[1].color = (0.322782, 0.0801937, 0.0701032, 1)
-    ColorRamp_base_mouth.color_ramp.elements[1].position = 0.05
+    ColorRamp_base_mouth.color_ramp.elements[1].position = 0.35
     ColorRamp_base_mouth.location = (-300,600)
     MixRGB_base_mouth = material_mouth.node_tree.nodes.new('ShaderNodeMixRGB')
     MixRGB_base_mouth.inputs[0].default_value = 0.15
     MixRGB_base_mouth.location=(0,600)
-    material_mouth.node_tree.links.new(Mapping_base_mouth.inputs[0],TexCoord_base_mouth.outputs[0])
+    material_mouth.node_tree.links.new(Vectoradd_base_mouth.inputs[1],Attribute_base_mouth.outputs[1])
+    material_mouth.node_tree.links.new(Mapping_base_mouth.inputs[1],Vectoradd_base_mouth.outputs[0])
+    material_mouth.node_tree.links.new(Mapping_base_mouth.inputs[0],TexCoord_base_mouth.outputs[3])
     material_mouth.node_tree.links.new(TexGradient_base_mouth.inputs[0],Mapping_base_mouth.outputs[0])
     material_mouth.node_tree.links.new(ColorRamp_base_mouth.inputs[0],TexGradient_base_mouth.outputs[1])
     #material_mouth.node_tree.links.new(BSDF_mouth.inputs[0],ColorRamp_base_mouth.outputs[0])
@@ -461,95 +389,6 @@ def texturing():
 
     bpy.ops.object.material_slot_add()
 
-    """
-    material_eyebrow  = bpy.data.materials.new("Eyebrow")
-    material_eyebrow.use_nodes = True
-
-    BSDF_eyebrow = material_eyebrow.node_tree.nodes.get('Principled BSDF')
-    BSDF_eyebrow.inputs[1].default_value=0.15
-
-    f_eyebrow= open(bpy.context.scene['file_path']['eye_brow_tex'],"r")
-    eyebrow_R = []
-    eyebrow_G = []
-    eyebrow_B = []
-    while True:
-        line_eyebrow = f_eyebrow.readline()
-    
-        if not line_eyebrow:
-            break
-        split_eyebrow = line_eyebrow.split()
-        eyebrow_R.append(float(split_eyebrow[0])/255) # always 1
-        eyebrow_G.append(float(split_eyebrow[1])/255)
-        eyebrow_B.append(float(split_eyebrow[2])/255)
-    f_eyebrow.close()    
-    
-    dark_rate_eyebrow = 0.2 #Skin stain level
-    
-    Voronoi_sub_eyebrow = material_eyebrow.node_tree.nodes.new('ShaderNodeTexNoise')
-    Voronoi_sub_eyebrow.inputs[2].default_value = 20
-    Voronoi_sub_eyebrow.location = (-800,600)
-    
-    ColorRamp_sub_eyebrow = material_eyebrow.node_tree.nodes.new('ShaderNodeValToRGB')
-    ColorRamp_sub_eyebrow.color_ramp.elements[0].color = (0, 0, 0, 1)
-    ColorRamp_sub_eyebrow.color_ramp.elements[0].position = 0.1
-    ColorRamp_sub_eyebrow.color_ramp.elements[1].color = (0, 0, 0, 1)
-    ColorRamp_sub_eyebrow.color_ramp.elements[1].position = 0.9
-    ColorRamp_sub_eyebrow.location = (-600,600)
-    
-    material_eyebrow.node_tree.links.new(ColorRamp_sub_eyebrow.inputs[0],Voronoi_sub_eyebrow.outputs[0])
-    material_eyebrow.node_tree.links.new(BSDF_eyebrow.inputs[3],ColorRamp_sub_eyebrow.outputs[0])
-
-    Voronoi_base_eyebrow = material_eyebrow.node_tree.nodes.new('ShaderNodeTexNoise')
-    Voronoi_base_eyebrow.inputs[2].default_value = 15
-    Voronoi_base_eyebrow.location = (-800,300)
-
-    ColorRamp_base_eyebrow = material_eyebrow.node_tree.nodes.new('ShaderNodeValToRGB')
-    #ColorRamp_base_eyebrow.color_ramp.elements[0].color = (eyebrow_R[40]*dark_rate_eyebrow, eyebrow_G[40]*dark_rate_eyebrow, eyebrow_B[40]*dark_rate_eyebrow, 1)
-    ColorRamp_base_eyebrow.color_ramp.elements[0].color = (0.177888, 0.109462, 0.0561285, 1)
-    ColorRamp_base_eyebrow.color_ramp.elements[0].position = 0.0
-    #ColorRamp_base_eyebrow.color_ramp.elements[1].color = (eyebrow_R[40], eyebrow_G[40], eyebrow_B[40], 1)
-    ColorRamp_base_eyebrow.color_ramp.elements[1].color = (0.262251, 0.158961, 0.0843762, 1)
-    ColorRamp_base_eyebrow.color_ramp.elements[1].position = 1
-    ColorRamp_base_eyebrow.location = (-600,300)
-    
-    material_eyebrow.node_tree.links.new(ColorRamp_base_eyebrow.inputs[0],Voronoi_base_eyebrow.outputs[0])
-    material_eyebrow.node_tree.links.new(BSDF_eyebrow.inputs[0],ColorRamp_base_eyebrow.outputs[0])
-    
-    Voronoi_eyebrow = material_eyebrow.node_tree.nodes.new('ShaderNodeTexVoronoi')
-    Voronoi_eyebrow.feature = 'SMOOTH_F1'
-    Voronoi_eyebrow.inputs[2].default_value = 1024
-    Voronoi_eyebrow.distance = 'MANHATTAN'
-    Voronoi_eyebrow.location = (-800,0)
-
-    ColorRamp_eyebrow = material_eyebrow.node_tree.nodes.new('ShaderNodeValToRGB')
-    #ColorRamp_eyebrow.color_ramp.elements[0].color = (eyebrow_R[20]*dark_rate_eyebrow, eyebrow_G[20]*dark_rate_eyebrow, eyebrow_B[20]*dark_rate_eyebrow, 1)
-    ColorRamp_eyebrow.color_ramp.elements[0].color = (0.35806, 0.231665, 0.114963, 1)
-    ColorRamp_eyebrow.color_ramp.elements[0].position = 0
-    #ColorRamp_eyebrow.color_ramp.elements[1].color =  (eyebrow_R[20], eyebrow_G[20], eyebrow_B[20], 1)
-    ColorRamp_eyebrow.color_ramp.elements[1].color =  (0.163335, 0.107151, 0.0599214, 1)
-    ColorRamp_eyebrow.color_ramp.elements[1].position = 0.4
-    ColorRamp_eyebrow.location = (-600,0)
-
-    ColorRamp_roughness_eyebrow = material_eyebrow.node_tree.nodes.new('ShaderNodeValToRGB')
-    ColorRamp_roughness_eyebrow.color_ramp.elements[0].color = (1, 1, 1, 1)
-    ColorRamp_roughness_eyebrow.color_ramp.elements[0].position = 0.3
-    ColorRamp_roughness_eyebrow.color_ramp.elements[1].color = (0, 0, 0, 1)
-    ColorRamp_roughness_eyebrow.color_ramp.elements[1].position = 1
-    ColorRamp_roughness_eyebrow.location = (-300,00)
-    
-    Bump_eyebrow = material_eyebrow.node_tree.nodes.new('ShaderNodeBump')
-    Bump_eyebrow.inputs[0].default_value = 4
-    Bump_eyebrow.inputs[1].default_value = 0.1
-    Bump_eyebrow.location = (-300,-300)
-
-    material_eyebrow.node_tree.links.new(ColorRamp_eyebrow.inputs[0], Voronoi_eyebrow.outputs[0])
-    material_eyebrow.node_tree.links.new(ColorRamp_roughness_eyebrow.inputs[0],ColorRamp_eyebrow.outputs[0])
-    material_eyebrow.node_tree.links.new(Bump_eyebrow.inputs[2],ColorRamp_eyebrow.outputs[0])
-    material_eyebrow.node_tree.links.new(BSDF_eyebrow.inputs[7],ColorRamp_roughness_eyebrow.outputs[0])
-    material_eyebrow.node_tree.links.new(BSDF_eyebrow.inputs[19], Bump_eyebrow.outputs[0])
-
-    bpy.context.object.active_material = material_eyebrow
-    """
     bpy.context.object.active_material = material # Input the same skin as the face
     bpy.ops.object.material_slot_assign()
     
@@ -561,3 +400,7 @@ def texturing():
 
     bpy.ops.mesh.select_all(action = 'DESELECT')
     bpy.ops.object.mode_set(mode = 'OBJECT')
+
+
+    
+
