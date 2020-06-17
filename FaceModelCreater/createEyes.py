@@ -126,6 +126,7 @@ def add_eyeball(self, context, coord, tex):
 def apply_boolean(target , plane, operation, delete) :
     
     # select face model
+    bpy.ops.object.mode_set(mode = 'OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
     
     target.select_set(True)    
@@ -149,7 +150,7 @@ def apply_boolean(target , plane, operation, delete) :
 
 def add_plane(self, context, coord): 
     verts = []
-    thickness = 30
+    thickness = 10
     param_thick = Vector((0,0,1 * thickness))
     
     floor = ceiling = np.array(coord)
@@ -306,47 +307,47 @@ def delete_object(target) :
     target.select_set(True) # Blender 2.8x
     bpy.ops.object.delete() 
 
-def create_eye_boudary_vg(target, comparison, new_vg_name):
-
+def toggle_edit_mode(target):
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+    bpy.ops.object.select_all(action = 'DESELECT')
     target.select_set(True)
     bpy.context.view_layer.objects.active = target
 
     bpy.ops.object.mode_set(mode = 'EDIT')
-    bpy.ops.mesh.select_all(action = 'DESELECT')
-
     bm=bmesh.from_edit_mesh(target.data)
     bm.verts.ensure_lookup_table()
 
-    intersected_vertex_index = []
-    comparison_v = comparison.data.vertices
-
-    for i, v in enumerate(bm.verts):
-        for c in comparison_v:
-            v.select = False
-            if np.array_equal(v.co, c.co) : 
-                v.select = True
-                intersected_vertex_index.append(v)
-                break
-
-    vg=bpy.context.object.vertex_groups.new(name=new_vg_name)
-    bpy.ops.object.vertex_group_assign()
-    
-    bpy.ops.mesh.select_all(action = 'DESELECT')
-    bpy.ops.object.mode_set(mode = 'OBJECT')
+    return bm
 
 def create_eye_hole(target, planes):
     for i, p in enumerate(planes) :
-                
-        # create vertex group
         if i == 0 :
-            vg_name = "eye_left_boundary"
-        else :
             vg_name = "eye_right_boundary"
-
+        else :
+            vg_name = "eye_left_boundary"
+     
         new_obj = duplicate_obj(target)
-        comparison = apply_boolean(new_obj, p , "INTERSECT", False)
+        new_p = duplicate_obj(p)
+   
+        # create eye hole
         apply_boolean(target, p , "DIFFERENCE", True)
-        create_eye_boudary_vg(target, comparison, vg_name)
+        intersect = apply_boolean(new_obj, new_p , "INTERSECT", True)
+        
+        face_bm = toggle_edit_mode(target).verts
+
+        bpy.ops.mesh.select_all(action = 'SELECT')
+        bpy.ops.mesh.region_to_loop()
+        selected_verts = [v for v in face_bm if v.select]
+        bpy.ops.mesh.select_all(action = 'DESELECT')
+        
+        for s in selected_verts:
+            for c in intersect.data.vertices:
+                if np.array_equal(s.co, c.co):
+                    s.select = True
+                    break
+
+        vg=bpy.context.object.vertex_groups.new(name=vg_name)
+        bpy.ops.object.vertex_group_assign()
         delete_object(new_obj)
                
 class MESH_OT_add_eyes(Operator, AddObjectHelper):
@@ -373,6 +374,7 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
 
             planes = make_curved_eye_plane(self, context, eye_point)
             
+            # create_eye_hole(target, planes)
             create_eye_hole(target, planes)
 
             add_eyeball(self, context, eye_point , eye_texture_path)
