@@ -29,7 +29,8 @@ class Hair_styler(bpy.types.Operator):
         #"beard",
         #"eye_left_boundary",
         #"eye_right_boundary",
-        "hair"
+        "hair",
+        #"hair_fine_hair"
     ]
     NAME_HEAD = "Man"
 
@@ -74,6 +75,9 @@ class Hair_styler(bpy.types.Operator):
             if len(guide_hair) == option["num_particle"]:
                 break
             
+            if option["mode"] == "hair" and len(selected) < 50:
+                continue
+
             for i in range(len(selected)):
                 selected[i] = transform(selected[i], coord_hair, coord_scalp, scale)
 
@@ -138,7 +142,7 @@ class Hair_styler(bpy.types.Operator):
 
     def fitting_physics(self, option, guided_hair, model, coord_scalp):
         for hair_idx, strand in enumerate(guided_hair):
-            if hair_idx % 100 == 0:
+            if hair_idx % 500 == 0:
                 print(hair_idx, len(guided_hair))
             for m in range(1, len(strand)):
                 iter = 0
