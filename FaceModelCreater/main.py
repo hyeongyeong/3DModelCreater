@@ -56,33 +56,33 @@ class main_Operator(bpy.types.Operator):
         
         store_boundary_loop(face)
 
-        bpy.ops.mesh.add_eyes()
-        bpy.ops.mesh.create_region_group()
+        # bpy.ops.mesh.add_eyes()
+        # bpy.ops.mesh.create_region_group()
 
-        bpy.ops.mesh.apply_texturing()
-        bpy.ops.mesh.mouth()
+        # bpy.ops.mesh.apply_texturing()
+        # bpy.ops.mesh.mouth()
 
         #transformation reset #################################
         
-        tongue = bpy.data.objects["tongue_lowres_Mesh.001"]
-        teeth1 = bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"]
-        teeth2 = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]
-        eye1 = bpy.data.objects["Sphere"]
-        eye2 = bpy.data.objects["Sphere.001"]
-        reset_transform(face)
-        reset_transform(tongue)
-        reset_transform(teeth1)
-        reset_transform(teeth2)
-        reset_transform(eye1)
-        reset_transform(eye2)
+        # tongue = bpy.data.objects["tongue_lowres_Mesh.001"]
+        # teeth1 = bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"]
+        # teeth2 = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]
+        # eye1 = bpy.data.objects["Sphere"]
+        # eye2 = bpy.data.objects["Sphere.001"]
+        # reset_transform(face)
+        # reset_transform(tongue)
+        # reset_transform(teeth1)
+        # reset_transform(teeth2)
+        # reset_transform(eye1)
+        # reset_transform(eye2)
         
         align_matrix = icp()
         align(face,align_matrix)
-        align(tongue, align_matrix)
-        align(teeth1, align_matrix)
-        align(teeth2, align_matrix)
-        align(eye1, align_matrix)
-        align(eye2, align_matrix)
+        # align(tongue, align_matrix)
+        # align(teeth1, align_matrix)
+        # align(teeth2, align_matrix)
+        # align(eye1, align_matrix)
+        # align(eye2, align_matrix)
         
         merge(face, body_objs)
         

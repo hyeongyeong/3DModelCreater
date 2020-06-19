@@ -159,6 +159,8 @@ def merge(objs, body_objs):
     bpy.ops.object.vertex_group_set_active(group=str("face_edge"))
     bpy.ops.object.vertex_group_select()
 
+    face_v = [v for v in bpy.context.active_object.data.vertices if v.select] # use this vertices to transfer normal to shrink object & extrude object
+
 
     scn = bpy.context.scene
     names = [obj.name for obj in scn.objects]
@@ -171,7 +173,16 @@ def merge(objs, body_objs):
 
     bpy.ops.object.select_all(action = 'DESELECT')
     extrude_objs.select_set(True)
-    bpy.context.view_layer.objects.active = extrude_objs  
+    bpy.context.view_layer.objects.active = extrude_objs
+    
+    extrude_normal = []
+    for i in range(len(extrude_objs.data.vertices)):
+        extrude_objs.data.vertices[i].normal = face_v[i].normal
+        extrude_normal.append(extrude_objs.data.vertices[i].normal)
+        
+
+
+
     shrink_objs = duplicate_obj(extrude_objs)
     
     bpy.ops.object.select_all(action = 'DESELECT')
@@ -226,11 +237,24 @@ def merge(objs, body_objs):
     bpy.context.view_layer.objects.active =shrink_objs
     vg = shrink_objs.vertex_groups.new(name="body_edge")
     vert = []
-    for v in shrink_objs.data.vertices:
-        vert.append(v.index)
+    i = 0
+
+    for i in range(len(face_v)):
+        print(face_v[i].normal)
+
+    for i in range(len(shrink_objs.data.vertices)):
+        shrink_objs.data.vertices[i].normal = extrude_normal[i]
+        vert.append(shrink_objs.data.vertices[i].index)
+    # for v in shrink_objs.data.vertices:
+    #     # v.normal = face_v[i].normal
+    #     print(v.normal)
+    #     vert.append(v.index)
+    #     i = i + 1
     vg.add(vert, 1.0, 'ADD')
     bpy.ops.object.modifier_add(type='SHRINKWRAP')
     bpy.context.object.modifiers["Shrinkwrap"].target = body_objs
+    bpy.context.object.modifiers["Shrinkwrap"].wrap_method = 'TARGET_PROJECT'
+    bpy.context.object.modifiers["Shrinkwrap"].wrap_mode = 'INSIDE'
     bpy.ops.object.modifier_apply(apply_as='DATA',modifier= "Shrinkwrap")
 
 
@@ -244,15 +268,23 @@ def merge(objs, body_objs):
 
 
     # this is for testing. Fix it when commit
-    # bpy.ops.object.mode_set(mode = 'OBJECT')
-    # bpy.ops.object.select_all(action='DESELECT')
-    # body_objs.select_set(True)
-    # bpy.context.view_layer.objects.active =body_objs
-    # bpy.ops.object.mode_set(mode = 'EDIT')
-    # bpy.ops.mesh.select_all(action='SELECT')
-    # bpy.ops.mesh.select_all(action='DESELECT')
-    # bpy.ops.object.vertex_group_set_active(group=str("face_edge"))
-    # bpy.ops.object.vertex_group_select()
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    body_objs.select_set(True)
+    bpy.context.view_layer.objects.active =body_objs
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.select_all(action='DESELECT')
+    bpy.ops.object.vertex_group_set_active(group=str("body_edge"))
+    bpy.ops.object.vertex_group_select()
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+    will_modified = [v for v in bpy.context.active_object.data.vertices if v.select] # use this vertices to transfer normal to shrink object & extrude object
+
+    print(len(will_modified))
+    print(len(extrude_normal))
+    for i in range(len(will_modified)):
+        will_modified[i].normal = extrude_normal[i]
+
 
     model = os.getcwd() + "/external/intermediate/nose.obj"
     data = os.getcwd() + "/external/intermediate/man_nose.obj"
@@ -265,9 +297,10 @@ def merge(objs, body_objs):
     (0,math.floor(matrix_world[1][1]*1000)/1000,0,matrix_world[3][1]),
     (0,0,math.floor(matrix_world[2][2]*1000)/1000,matrix_world[3][2]),
     (matrix_world[0][3],-matrix_world[2][3],matrix_world[1][3],matrix_world[3][3]))
-
-
     objs.matrix_world = matrix
+
+
+
     #join face and body
     bpy.ops.object.select_all(action='DESELECT')
     body_objs.select_set(True)
@@ -287,4 +320,8 @@ def merge(objs, body_objs):
     bpy.ops.object.vertex_group_set_active(group=str("body_edge"))
     bpy.ops.object.vertex_group_select()
     bpy.ops.mesh.bridge_edge_loops()   
+    bpy.ops.mesh.bridge_edge_loops(interpolation='SURFACE')
+    bpy.ops.mesh.bridge_edge_loops(number_cuts=10, interpolation='SURFACE')
+
+
 
