@@ -541,34 +541,93 @@ def delete_object(target) :
     target.select_set(True) # Blender 2.8x
     bpy.ops.object.delete() 
 
+def delete_unused_curved_plane_verts(target,plane):
+    intersect_list_index = []
+    for l in target.data.vertices :
+        for p in plane.data.vertices:
+            if np.array_equal((l.co.x, l.co.y),(p.co.x, p.co.y)):
+                intersect_list_index.append(l.index)
+                break
+
+    target_bm = toggle_edit_mode(target).verts
+    target_vg_list = [(target_bm[v].co.x,target_bm[v].co.y,target_bm[v].co.z, target_bm[v].index) for v in intersect_list_index]
+
+    target_vg_list.sort(key = lambda e: (e[0], e[1], e[2]), reverse=True)
+    if target_vg_list[0][0] == target_vg_list[1][0]:
+        bpy.ops.mesh.select_all(action = 'DESELECT')
+        for i in range(1, len(target_vg_list)):
+            if target_vg_list[i-1][0] == target_vg_list[i][0] and target_vg_list[i-1][1] == target_vg_list[i][1] and target_vg_list[i-1][2] > target_vg_list[i][2] :
+                target_bm[target_vg_list[i][3]].select = True
+
+            if (i-2 >= 0) and target_vg_list[i-2][0] != target_vg_list[i][0] and target_vg_list[i-1][0] != target_vg_list[i][0]:
+                target_bm[target_vg_list[i-1][3]].select = True
+        bpy.ops.mesh.delete(type='VERT')
+
 def create_curved_region_group(self, context, target, coord, vertex_group_name):
     
     intersect = "INTERSECT"
     difference = "DIFFERENCE"
     union = "UNION"
     
+    boundary_vg = vertex_group_name +"_boundary_temp"
+    context_vg = vertex_group_name + "_context_temp"
+
     # create new_obj plane to apply intersect and difference
     new_obj = duplicate_obj(target)
     new_obj_plane_d = curved_plane(self, context, coord)
     new_obj_plane_i = duplicate_obj(new_obj_plane_d)
-            
+    
     # apply boolean to get region of new_obj
-    intersect_obj = apply_boolean(new_obj, new_obj_plane_i, intersect, True)
+    intersect_obj = apply_boolean(new_obj, new_obj_plane_i, intersect, False)
     apply_boolean(target, new_obj_plane_d, difference, True)
+
+    # delete vertex that out of range
+    delete_unused_curved_plane_verts(target, new_obj_plane_i)
+    delete_unused_curved_plane_verts(intersect_obj, new_obj_plane_i)
+    delete_object(new_obj_plane_i)
+
+
+    face_bm = toggle_edit_mode(target).verts
+
+    bpy.ops.mesh.select_all(action = 'SELECT')
+    bpy.ops.mesh.region_to_loop()
+    selected_verts = [v for v in face_bm if v.select]
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    
+    for s in selected_verts:
+        for c in intersect_obj.data.vertices:
+            if np.array_equal(s.co, c.co):
+                s.select = True
+                break
+    
+    vg=bpy.context.object.vertex_groups.new(name=boundary_vg)
+    bpy.ops.object.vertex_group_assign()
+
     
     toggle_edit_mode(intersect_obj)
     bpy.ops.mesh.select_all(action = 'SELECT')
-    vg=bpy.context.object.vertex_groups.new(name=vertex_group_name)
+    vg=bpy.context.object.vertex_groups.new(name=context_vg)
     bpy.ops.object.vertex_group_assign()
 
     join_obj(target, intersect_obj)
 
     toggle_edit_mode(target)
+    bpy.ops.object.vertex_group_set_active(group=context_vg)
+    bpy.ops.object.vertex_group_select()
+    bpy.ops.object.vertex_group_set_active(group=boundary_vg)
+    bpy.ops.object.vertex_group_select()
+    vg=bpy.context.object.vertex_groups.new(name=vertex_group_name)
+    bpy.ops.object.vertex_group_assign()
+
     bpy.ops.mesh.select_all(action = 'SELECT')
-    bpy.ops.mesh.remove_doubles(threshold=0.001)
+    bpy.ops.mesh.remove_doubles(threshold=0.00000001)
+
+
+    remove_vertex_group(target, boundary_vg)
+    remove_vertex_group(target, context_vg)
+
     bpy.ops.object.mode_set(mode = 'OBJECT') 
     
-
 def get_vertex_by_vg(target, vg_name):
     vg_idx = target.vertex_groups[vg_name].index
     vs = [ v for v in target.data.vertices if vg_idx in [ vg.group for vg in v.groups ] ]
@@ -627,29 +686,6 @@ def create_boundary_loop_vg(target, vg_name, new_vg_name):
 
     bpy.ops.mesh.select_all(action = 'DESELECT')
 
-# 평면 difference로 생성되었던 plane 지우기
-def remove_plane_by_vg(target,vg_name):
-    vertex_index = []
-
-    bpy.ops.object.mode_set(mode = 'EDIT')
-    bpy.ops.mesh.select_all(action = 'DESELECT')
-
-    bpy.ops.object.vertex_group_set_active(group= vg_name)
-    bpy.ops.object.vertex_group_select()
-
-    bm=bmesh.from_edit_mesh(target.data)
-    bm.verts.ensure_lookup_table()
-
-    vertex_index = get_vertex_index_by_vg(target, vg_name)
-
-    for t in vertex_index:
-        if bm.verts[t].normal.z > 0.2:
-            bm.verts[t].select = False
-        else:
-            bm.verts[t].select = True
-        
-    bpy.ops.mesh.delete(type='VERT')
-
 
 class MESH_OT_create_region_group(Operator, AddObjectHelper):
     bl_idname = "mesh.create_region_group"
@@ -682,14 +718,13 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             create_curved_region_group(self, context, target, lips_coord, "lips")
             create_curved_region_group(self, context, target, eye_brow_right_coord, "eye_brow_r")
             create_curved_region_group(self, context, target, eye_brow_left_coord, "eye_brow_l")
-
+  
             # create boundary loop of exist vertex group
             create_boundary_loop_vg(target, "eye_brow_r", "eye_brow_r_boundary")
             create_boundary_loop_vg(target, "eye_brow_l", "eye_brow_l_boundary")
 
             # remove back-plane of eye-brow
-            # remove_plane_by_vg(target, "eye_brow_r_boundary")
-            # remove_plane_by_vg(target, "eye_brow_l_boundary")
+             
 
             vertex_group_mustache_beard(target.data, "temp1","temp2")
             
