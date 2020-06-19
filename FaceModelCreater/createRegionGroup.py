@@ -539,7 +539,77 @@ def delete_object(target) :
     bpy.ops.object.mode_set(mode = 'OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
     target.select_set(True) # Blender 2.8x
-    bpy.ops.object.delete() 
+    bpy.ops.object.delete()
+
+def get_vertex_top_lip(target, vg_name, vertex_group_name):
+    f= open(bpy.context.scene['file_path']['point'],"r")
+    
+    iter =0
+    land_x =[]
+    land_y =[]
+    land_z =[]
+
+    while True:
+        line = f.readline()
+
+        if not line:
+            break
+        split = line.split()
+       
+        land_x.append(float(split[0]))
+        land_y.append(float(split[1]))
+        land_z.append(float(split[2]))
+        iter= iter+1
+
+    f.close()
+
+    
+    vs = get_vertex_by_vg(target, vg_name)
+    
+    vg_index = []
+
+    lip_vertex_list = []
+    # for fa in vs:
+    #     if fa.co.y>temp_value:
+    #         temp_value = fa.co.y
+
+    # vg index
+    for fa in vs:
+        vg_index.append(fa.index)
+
+    bm = toggle_edit_mode(target)
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    
+    # range_left = ((land_x[34]+land_x[35])/2 + land_x[35])/2
+    # range_right = ((land_x[35]+land_x[36])/2 +land_x[35])/2
+
+    range_left = land_x[35]-1
+    range_right = land_x[35]+1
+
+    tempv =0
+    for i in vg_index:
+        v = bm.verts[i]
+        # v.select = True
+        #if(v.co.x - land_x[35]> -1 and v.co.x - land_x[35]< 1):
+        if(v.co.x > range_left and v.co.x < range_right):
+            tempv =  tempv+1
+            lip_vertex_list.append((v.index, v.co.x, v.co.y, v.co.z))
+    
+    lip_vertex_list.sort(key = lambda e: e[2], reverse=True)
+    # print(lip_vertex_list)
+    bm.verts[lip_vertex_list[0][0]].select = True
+    bm.verts[lip_vertex_list[1][0]].select = True
+    bm.verts[lip_vertex_list[2][0]].select = True
+
+    # for i in range(0,tempv):
+    #     bm.verts[lip_vertex_list[i][0]].select = True
+
+   
+
+    vg=bpy.context.object.vertex_groups.new(name=vertex_group_name)
+    bpy.ops.object.vertex_group_assign()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bpy.ops.object.mode_set(mode = 'OBJECT')
 
 def delete_unused_curved_plane_verts(target,plane):
     intersect_list_index = []
@@ -718,6 +788,8 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             create_curved_region_group(self, context, target, lips_coord, "lips")
             create_curved_region_group(self, context, target, eye_brow_right_coord, "eye_brow_r")
             create_curved_region_group(self, context, target, eye_brow_left_coord, "eye_brow_l")
+
+            get_vertex_top_lip(target, "lips", "lips_top")
   
             # create boundary loop of exist vertex group
             create_boundary_loop_vg(target, "eye_brow_r", "eye_brow_r_boundary")
@@ -733,7 +805,7 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             create_boolean_vertex_group(target,"temp2", "mustache", "temp3")
             create_boolean_vertex_group(target,"temp3", "lips", "beard")
 
-            get_vertex_by_vg(target,"lips")
+            #get_vertex_by_vg(target,"lips")
             
             # delete unusing vertex group
             remove_vertex_group(target, "temp1")
