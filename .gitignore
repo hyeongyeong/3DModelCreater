@@ -3,5 +3,5 @@
 
 /input/.vscode
 /input/__pycache__
-
+.vscode
 *.pyc
