@@ -318,7 +318,7 @@ def merge(objs, body_objs):
     bpy.ops.object.vertex_group_select()
     bpy.ops.object.mode_set(mode='OBJECT')
     
-    selectedVerts = [v for v in bpy.context.active_object.data.vertices if v.select]
+    selectedVerts = [v for v in bm.verts if v.select]
 
     # for v_ in selectedVerts:
     #     for v in bpy.context.active_object.data.vertices:
@@ -328,47 +328,43 @@ def merge(objs, body_objs):
     #                 v.select =True
 
     cnt = 0
+
+
+    # for e in bm.edges:
+    #     v1 = e.verts[0]
+    #     v2 = e.verts[1]
+    #     for v_ in selectedVerts:
+    #         if not v1.select:
+    #             dist = math.sqrt((v1.co.x - v_.co.x)**2 + (v1.co.y - v_.co.y)**2 + (v1.co.z - v_.co.z)**2)
+    #             dist_xy = math.sqrt((v1.co.x-v_.co.x) ** 2 + (v1.co.y - v_.co.y)**2)
+    #             if dist != 0 and dist < search_distance and v1.co.z > v_.co.z and dist_xy < 0.05:
+    #                 if e.is_valid:
+    #                     bm.edges.remove(e)
+    #                     if not (bm.edges.get((v_,v1))):
+    #                         bm.edges.new((v_,v1))
+
+
+
+    # for f in bm.faces:
+    #     for i in range(len(f.verts)):
+    #         v = f.verts[i]
+    #         for v_ in selectedVerts:
+    #             if not v.select:
+    #                 dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2)
+    #                 dist_xy = math.sqrt((v.co.x-v_.co.x) ** 2 + (v.co.y - v_.co.y)**2)
+    #                 if dist != 0 and dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.05:
+    #                     f.verts[i].co = v_.co
+            
+
     for v in bm.verts:
         for v_ in selectedVerts:
-            if v not in selectedVerts:
+            if not v.select and v.is_valid:
                 cnt = cnt + 1
-                # print(cnt)
                 dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2)
                 dist_xy = math.sqrt((v.co.x-v_.co.x) ** 2 + (v.co.y - v_.co.y)**2)
-                if dist != 0 and dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.05:
-                    bm.verts.remove(v)
-                    v = v_
-                    # bm.verts.remove(v)
-        # bm.verts.remove(v)
-
+                if dist != 0 and dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.02:
+                    v.co = v_.co
     bm.to_mesh(me)
-    # for v in bm.verts:
-    #     if (not v.select):
-    #         for v_ in selectedVerts:
-    #             dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2)
-    #             dist_xy = math.sqrt((v.co.x-v_.co.x) ** 2 + (v.co.y - v_.co.y)**2)
-    #             if dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.05:
-    #                 bm.verts.remove(v)
-    # for v in bpy.context.active_object.data.vertices:
-    #     # print(v.co)
-    #     if (not v.select):
-    #         for v_ in selectedVerts:
-    #             dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2)
-    #             dist_xy = math.sqrt((v.co.x-v_.co.x) ** 2 + (v.co.y - v_.co.y)**2)
-    #             if dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.05:
-    #                 v.select =True
-
-    # selectedEdges = [e for e in bpy.context.active_object.data.edges if e.select]
-
-    # for e in selectedEdges:
-    #     v_1 = bpy.context.active_object.data.vertices[e.vertices[0]]
-    #     v_2 = bpy.context.active_object.data.vertices[e.vertices[1]]
-    #     flag = False
-    #     for v_ in selectedVerts:
-    #         if v_1 != v_ or v_2 != v_:
-    #             flag = True
-    #     if flag:
-    #         print("hello")
 
 
 
@@ -377,28 +373,28 @@ def merge(objs, body_objs):
 
 
 
-    # #join face and body
-    # bpy.ops.object.mode_set(mode ='OBJECT')
-    # bpy.ops.object.select_all(action='DESELECT')
-    # body_objs.select_set(True)
-    # objs.select_set(True)
-    # bpy.context.view_layer.objects.active = body_objs
-    # bpy.ops.object.join()
+    #join face and body
+    bpy.ops.object.mode_set(mode ='OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    body_objs.select_set(True)
+    objs.select_set(True)
+    bpy.context.view_layer.objects.active = body_objs
+    bpy.ops.object.join()
 
-    # #merge face and body
-    # bpy.ops.object.select_all(action='DESELECT')
-    # body_objs.select_set(True)
-    # bpy.context.view_layer.objects.active =body_objs
-    # bpy.ops.object.mode_set(mode = 'EDIT')
-    # bpy.ops.mesh.select_all(action='DESELECT')
-    # bpy.ops.object.mode_set(mode = 'EDIT')
-    # bpy.ops.object.vertex_group_set_active(group=str("face_edge"))
-    # bpy.ops.object.vertex_group_select()
-    # bpy.ops.object.vertex_group_set_active(group=str("body_edge"))
-    # bpy.ops.object.vertex_group_select()
-    # bpy.ops.mesh.bridge_edge_loops()   
-    # bpy.ops.mesh.bridge_edge_loops(interpolation='SURFACE')
-    # bpy.ops.mesh.bridge_edge_loops(number_cuts=10, interpolation='SURFACE')
+    #merge face and body
+    bpy.ops.object.select_all(action='DESELECT')
+    body_objs.select_set(True)
+    bpy.context.view_layer.objects.active =body_objs
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action='DESELECT')
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.object.vertex_group_set_active(group=str("face_edge"))
+    bpy.ops.object.vertex_group_select()
+    bpy.ops.object.vertex_group_set_active(group=str("body_edge"))
+    bpy.ops.object.vertex_group_select()
+    bpy.ops.mesh.bridge_edge_loops()   
+    bpy.ops.mesh.bridge_edge_loops(interpolation='SURFACE')
+    bpy.ops.mesh.bridge_edge_loops(number_cuts=10, interpolation='SURFACE')
 
 
 

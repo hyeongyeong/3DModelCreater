@@ -86,6 +86,6 @@ class main_Operator(bpy.types.Operator):
         
         merge(face, body_objs)
         
-        # bpy.ops.mesh.apply_texturing()
+        bpy.ops.mesh.apply_texturing()
         
         return {'FINISHED'}
