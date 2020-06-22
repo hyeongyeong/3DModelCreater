@@ -6,6 +6,7 @@ import numpy as np
 from numpy import genfromtxt
 import math
 from mathutils import Vector, Matrix
+import bmesh
 
 
 
@@ -237,8 +238,7 @@ def merge(objs, body_objs):
     vert = []
     i = 0
 
-    for i in range(len(face_v)):
-        print(face_v[i].normal)
+
 
     for i in range(len(shrink_objs.data.vertices)):
         shrink_objs.data.vertices[i].normal = extrude_normal[i]
@@ -298,8 +298,15 @@ def merge(objs, body_objs):
 
 
     #search nearby vertex
+
     bpy.ops.object.mode_set(mode='OBJECT')
-    search_distance = 0.01
+    ob = bpy.context.active_object
+    me = ob.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+
+
+    search_distance = 0.065
     bpy.ops.object.select_all(action='DESELECT')
     body_objs.select_set(True)
     bpy.context.view_layer.objects.active = body_objs
@@ -310,18 +317,58 @@ def merge(objs, body_objs):
     bpy.ops.object.vertex_group_set_active(group=str("body_edge"))
     bpy.ops.object.vertex_group_select()
     bpy.ops.object.mode_set(mode='OBJECT')
-    selectedEdges = [e for e in bpy.context.active_object.data.edges if e.select]
+    
     selectedVerts = [v for v in bpy.context.active_object.data.vertices if v.select]
 
-    for v in bpy.context.active_object.data.vertices:
-        # print(v.co)
-        if (not v.select):
-            for v_ in selectedVerts:
-                dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2)
-                if dist < search_distance:
-                    v.select =True
+    # for v_ in selectedVerts:
+    #     for v in bpy.context.active_object.data.vertices:
+    #         if (not v. select):
+    #             dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2) 
+    #             if dist < search_distance and v.co.z > v_.co.z:
+    #                 v.select =True
 
-    
+    cnt = 0
+    for v in bm.verts:
+        for v_ in selectedVerts:
+            if v not in selectedVerts:
+                cnt = cnt + 1
+                # print(cnt)
+                dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2)
+                dist_xy = math.sqrt((v.co.x-v_.co.x) ** 2 + (v.co.y - v_.co.y)**2)
+                if dist != 0 and dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.05:
+                    bm.verts.remove(v)
+                    v = v_
+                    # bm.verts.remove(v)
+        # bm.verts.remove(v)
+
+    bm.to_mesh(me)
+    # for v in bm.verts:
+    #     if (not v.select):
+    #         for v_ in selectedVerts:
+    #             dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2)
+    #             dist_xy = math.sqrt((v.co.x-v_.co.x) ** 2 + (v.co.y - v_.co.y)**2)
+    #             if dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.05:
+    #                 bm.verts.remove(v)
+    # for v in bpy.context.active_object.data.vertices:
+    #     # print(v.co)
+    #     if (not v.select):
+    #         for v_ in selectedVerts:
+    #             dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2)
+    #             dist_xy = math.sqrt((v.co.x-v_.co.x) ** 2 + (v.co.y - v_.co.y)**2)
+    #             if dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.05:
+    #                 v.select =True
+
+    # selectedEdges = [e for e in bpy.context.active_object.data.edges if e.select]
+
+    # for e in selectedEdges:
+    #     v_1 = bpy.context.active_object.data.vertices[e.vertices[0]]
+    #     v_2 = bpy.context.active_object.data.vertices[e.vertices[1]]
+    #     flag = False
+    #     for v_ in selectedVerts:
+    #         if v_1 != v_ or v_2 != v_:
+    #             flag = True
+    #     if flag:
+    #         print("hello")
 
 
 

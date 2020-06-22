@@ -75,7 +75,7 @@ class main_Operator(bpy.types.Operator):
         # reset_transform(teeth2)
         # reset_transform(eye1)
         # reset_transform(eye2)
-        
+    
         align_matrix = icp()
         align(face,align_matrix)
         # align(tongue, align_matrix)
