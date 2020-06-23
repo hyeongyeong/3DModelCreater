@@ -1,7 +1,7 @@
 ply
 format ascii 1.0
 comment author: Yinghao Li
-comment object: hee_f-output
+comment object: model-output
 element vertex 3448
 property float x
 property float y

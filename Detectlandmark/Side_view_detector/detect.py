@@ -98,12 +98,16 @@ def visualize_facial_landmarks(image, shape, file_name, colors=None, alpha=0.6):
 # initialize dlib's face detector (HOG-based) and then create
 # the facial landmark predictor
 #detector = dlib.get_frontal_face_detector()
-file_name = open("point.pts", "w")
+
+file_name = open("side_point.pts", "w")
 cnn_face_detector = dlib.cnn_face_detection_model_v1("cnn.dat")
 predictor = dlib.shape_predictor(args["shape_predictor"])
 
 # load the input image, resize it, and convert it to grayscale
 image = cv2.imread(args["image"])
+
+tif_name = "C:/Users/yongsung/Desktop/demo_06_10"+"/side.tif"
+cv2.imwrite(tif_name,image)
 #image = imutils.resize(image, width=500)
 #image = cv2.resize(image, dsize=(256,256))
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -123,6 +127,6 @@ for (i, rect) in enumerate(rects):
 
     output = visualize_facial_landmarks(image, shape, file_name)
     cv2.rectangle(output, (rect.rect.left(), rect.rect.top()), (rect.rect.right(), rect.rect.bottom()), (1, 0, 0))
-    # cv2.imshow("Image", output)
-    # cv2.waitKey(0)
+    cv2.imshow("Side_landmark_Detect", output)
+    cv2.waitKey(0)
 file_name.close()
