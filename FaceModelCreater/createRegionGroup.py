@@ -611,6 +611,123 @@ def get_vertex_top_lip(target, vg_name, vertex_group_name):
     bpy.ops.mesh.select_all(action = 'DESELECT')
     bpy.ops.object.mode_set(mode = 'OBJECT')
 
+def get_vertex_eye(target, vg_name,vg_name2, vertex_group_name1,vertex_group_name2):
+    f= open(bpy.context.scene['file_path']['point'],"r")
+    
+    iter =0
+    land_x =[]
+    land_y =[]
+    land_z =[]
+
+    while True:
+        line = f.readline()
+
+        if not line:
+            break
+        split = line.split()
+       
+        land_x.append(float(split[0]))
+        land_y.append(float(split[1]))
+        land_z.append(float(split[2]))
+        iter= iter+1
+
+    f.close()
+
+    
+    vs = get_vertex_by_vg(target, vg_name)
+    vs2 = get_vertex_by_vg(target, vg_name2)
+    
+    vg_index = []
+    vg_index2 = []
+
+    eye_top_vertex_list = []
+    eye_bot_vertex_list = []
+
+    
+    # for fa in vs:
+    #     if fa.co.y>temp_value:
+    #         temp_value = fa.co.y
+
+    # vg index
+    for fa in vs:
+        vg_index.append(fa.index)
+
+    for fa2 in vs2:
+        vg_index2.append(fa2.index)
+
+    bm = toggle_edit_mode(target)
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    
+    
+    range_right = (land_x[23] + land_x[24])/2
+    range_left = (land_x[20] + land_x[25])/2
+
+    range_right2 = (land_x[30] + land_x[29])/2
+    range_left2 = (land_x[26] + land_x[31])/2
+
+    tempv =0
+    tempv2 =0
+
+    for i in vg_index:
+        v = bm.verts[i]
+        
+        if(v.co.x > range_left and v.co.x < range_right):
+            if(v.co.y>land_y[20]):
+                tempv =  tempv+1
+                eye_top_vertex_list.append((v.index, v.co.x, v.co.y, v.co.z))
+    
+    for i in vg_index2:
+        v = bm.verts[i]
+        
+        if(v.co.x > range_left2 and v.co.x < range_right2):
+            if(v.co.y>land_y[29]):
+                tempv2 =  tempv2+1
+                eye_top_vertex_list.append((v.index, v.co.x, v.co.y, v.co.z))
+    
+
+    for i in range(0,tempv+tempv2):
+        bm.verts[eye_top_vertex_list[i][0]].select = True
+
+
+    vg=bpy.context.object.vertex_groups.new(name=vertex_group_name1)
+    bpy.ops.object.vertex_group_assign()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+
+    tempv =0
+    tempv2 =0
+
+    for i in vg_index:
+        v = bm.verts[i]
+        
+        if(v.co.x > range_left and v.co.x < range_right):
+            if(v.co.y<land_y[20]):
+                tempv =  tempv+1
+                eye_bot_vertex_list.append((v.index, v.co.x, v.co.y, v.co.z))
+
+    for i in vg_index2:
+        v = bm.verts[i]
+        
+        if(v.co.x > range_left2 and v.co.x < range_right2):
+            if(v.co.y<land_y[29]):
+                tempv =  tempv+1
+                eye_bot_vertex_list.append((v.index, v.co.x, v.co.y, v.co.z))
+    
+    
+
+    for i in range(0,tempv+tempv2):
+        bm.verts[eye_bot_vertex_list[i][0]].select = True
+
+   
+
+    vg=bpy.context.object.vertex_groups.new(name=vertex_group_name2)
+    bpy.ops.object.vertex_group_assign()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+
+
+
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+
 def delete_unused_curved_plane_verts(target,plane):
     intersect_list_index = []
     for l in target.data.vertices :
@@ -800,6 +917,8 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
 
             vertex_group_mustache_beard(target.data, "temp1","temp2")
             
+            get_vertex_eye(target, "eye_right_boundary","eye_left_boundary", "eye_top","eye_bot")
+
             # create vertex group using exist vertex group
             create_boolean_vertex_group(target,"temp1", "lips", "mustache")            
             create_boolean_vertex_group(target,"temp2", "mustache", "temp3")
