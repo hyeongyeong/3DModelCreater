@@ -327,7 +327,6 @@ def merge(objs, body_objs):
     #             if dist < search_distance and v.co.z > v_.co.z:
     #                 v.select =True
 
-    cnt = 0
 
 
     # for e in bm.edges:
@@ -354,25 +353,28 @@ def merge(objs, body_objs):
     #                 dist_xy = math.sqrt((v.co.x-v_.co.x) ** 2 + (v.co.y - v_.co.y)**2)
     #                 if dist != 0 and dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.05:
     #                     f.verts[i].co = v_.co
-            
-
-    for v in bm.verts:
-        for v_ in selectedVerts:
-            if not v.select and v.is_valid:
-                cnt = cnt + 1
-                dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2)
-                dist_xy = math.sqrt((v.co.x-v_.co.x) ** 2 + (v.co.y - v_.co.y)**2)
-                if dist != 0 and dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.02:
-                    v.co = v_.co
-    bm.to_mesh(me)
 
 
-
-
-
-
-
-
+    # for v in bm.verts:
+    #     for v_ in selectedVerts:
+    #         if not v.select and v.is_valid:
+    #             dist = math.sqrt((v.co.x - v_.co.x)**2 + (v.co.y - v_.co.y)**2 + (v.co.z - v_.co.z)**2)
+    #             dist_xy = math.sqrt((v.co.x-v_.co.x) ** 2 + (v.co.y - v_.co.y)**2)
+    #             if dist != 0 and dist < search_distance and v.co.z > v_.co.z and dist_xy < 0.02:
+    #                 # print(len(v.link_faces))
+    #                 for f in v.link_faces:
+    #                     v_list = []
+    #                     for f_v in f.verts:
+    #                         if f_v == v:
+    #                             v.co = v_.co
+    #                             v_list.append(v_)
+    #                         else:
+    #                             v_list.append(f_v)
+    #                     bm.faces.remove(f)
+    #                     bm.faces.new(v_list)
+    #                 # bm.faces.remove(v.link_faces)
+    #                 # v.co = v_.co
+    # bm.to_mesh(me)
     #join face and body
     bpy.ops.object.mode_set(mode ='OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
