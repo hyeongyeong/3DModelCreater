@@ -59,7 +59,7 @@ class main_Operator(bpy.types.Operator):
 
         bpy.ops.mesh.add_eyes()
         bpy.ops.mesh.create_region_group()
-
+        """
         ##### make philtrum
         bpy.ops.mesh.create_philtrum()
         
@@ -91,7 +91,7 @@ class main_Operator(bpy.types.Operator):
         align(eye2, align_matrix)
         
         merge(face, body_objs)
-        
+        """
         bpy.ops.mesh.apply_texturing()
         
         return {'FINISHED'}
