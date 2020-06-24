@@ -23,12 +23,12 @@ class Hair_styler(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'} 
         
     STYLER_MODE = [
-        #"eye_brow_r",
-        #"eye_brow_l",
+        "eye_brow_r",
+        "eye_brow_l",
         #"mustache",
         #"beard",
-        #"eye_left_boundary",
-        #"eye_right_boundary",
+        "eye_left_boundary",
+        "eye_right_boundary",
         "hair",
         "hair_fine_hair"
     ]
@@ -36,21 +36,21 @@ class Hair_styler(bpy.types.Operator):
 
     def execute(self, context):
 
+        head = utils_select_obj(target=self.NAME_HEAD)
+        if head == None:
+            head = bpy.context.view_layer.objects.active
+        ustils_add_hair_scalp(head)
         for mode in self.STYLER_MODE:
             print("[[INFO]] Styling Hair system : MODE [%s] .... " % mode)
-            self.do_styling(mode)
+            self.do_styling(mode, head)
 
         return {"FINISHED"}
 
 
-    def do_styling(self, STYLER_MODE):
+    def do_styling(self, STYLER_MODE, head):
 
-        head = utils_select_obj(target=self.NAME_HEAD)
-        if head == None:
-            head = bpy.context.view_layer.objects.active
         option = get_styling_option(STYLER_MODE, head)
         
-
         if option["style_path"] != "":
             preset = load_preset(option)
             style = self.generate_custom_style(option, preset)

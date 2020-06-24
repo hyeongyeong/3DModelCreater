@@ -20,7 +20,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
+            "style_path":os.getcwd()+"/input/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
 
@@ -49,7 +49,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
+            "style_path":os.getcwd()+"/input/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             
@@ -79,7 +79,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
+            "style_path":os.getcwd()+"/input/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             
@@ -196,7 +196,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/strands00372.pk",
+            "style_path":os.getcwd()+"/input/strands00372.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             
@@ -380,6 +380,24 @@ def utils_add_particle_system(option):
 
     return psys
 
+def ustils_add_hair_scalp(head):
+
+    vg = head.vertex_groups.get("hair")
+    if vg != None:
+        return
+    vg = head.vertex_groups.new(name="hair")
+
+    # coords
+    coord_f = open(os.getcwd()+"/input/hair_scalp.pk", "rb")
+    co_list = pickle.load(coord_f)
+    selected = []
+    for v in head.data.vertices:
+        now = list(v.co)
+        if now in co_list:
+            selected.append(v.index)
+    vg.add(selected, 1.0, "ADD")
+
+    coord_f.close()
 
 def set_child(option):
     if option["child"] == True:
