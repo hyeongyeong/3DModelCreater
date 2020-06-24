@@ -3,7 +3,7 @@
 @author: Yinghao li
 """
 
-from core import Blendshape
+from MM_fitting.core import Blendshape
 import numpy as np
 from scipy import sparse
 from scipy import optimize

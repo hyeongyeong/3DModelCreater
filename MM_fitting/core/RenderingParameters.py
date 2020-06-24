@@ -5,7 +5,7 @@
 
 import json
 import numpy as np
-from core import glm
+from MM_fitting.core import glm
 from enum import IntEnum
 
 

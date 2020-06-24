@@ -3,7 +3,7 @@
 @author: Yinghao Li
 """
 
-from core import LandmarkMapper, glm, utils, Mesh
+from MM_fitting.core import LandmarkMapper, glm, utils, Mesh
 import numpy as np
 import cv2
 import os

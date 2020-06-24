@@ -4,7 +4,7 @@
 """
 
 import numpy as np
-from core import glm, utils, RenderingParameters, Mesh
+from MM_fitting.core import glm, utils, RenderingParameters, Mesh
 
 from scipy.spatial import KDTree
 

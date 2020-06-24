@@ -20,12 +20,17 @@ from MM_fitting.core import Blendshape, contour_correspondence, EdgeTopology, fi
 # frontal_pic_name = '00019fa010_940128'
 # profile_pic_name = '00019pr010_940128'
 
-def run():
-    frontal_pic_name = 'song_f'
-    profile_pic_name = 'song_r'
+def run(f_pic, p_pic):
+    # frontal_pic_name = 'song_f'
+    # profile_pic_name = 'song_r'
+    frontal_pic_name = f_pic
+    profile_pic_name = p_pic
+    cur_path = os.path.dirname(os.path.abspath(__file__))
+    # frontal_img = cv2.imread(os.path.join(r'..\data', frontal_pic_name + '.tif'))
+    # profile_img = cv2.imread(os.path.join(r'..\data', profile_pic_name + '.tif'))
 
-    frontal_img = cv2.imread(os.path.join(r'..\data', frontal_pic_name + '.tif'))
-    profile_img = cv2.imread(os.path.join(r'..\data', profile_pic_name + '.tif'))
+    frontal_img = cv2.imread(os.path.join(cur_path + '/../data/'+frontal_pic_name+'.tif'))
+    profile_img = cv2.imread(os.path.join(cur_path + '/../data/'+profile_pic_name+'.tif'))
     width = np.shape(frontal_img)[1]
     height = np.shape(frontal_img)[0]
     # marker.frontal_face_marker(os.path.join(r'..\data', frontal_pic_name + '.tif'))
@@ -35,7 +40,9 @@ def run():
     scale_param = 900 / height if height >= width else 900 / width
     # scale_param = 1
 
-    morphable_model = MorphableModel.load_model(r"..\py_share\py_sfm_shape_3448.bin")
+
+    # morphable_model = MorphableModel.load_model(r"..\py_share\py_sfm_shape_3448.bin")
+    morphable_model = MorphableModel.load_model(os.path.join(cur_path + '/../py_share/py_sfm_shape_3448.bin'))
     blendshapes = Blendshape.load_blendshapes(r"..\py_share\py_expression_blendshapes_3448.bin")
     landmark_mapper = LandmarkMapper.LandmarkMapper(r'..\py_share\ibug_to_sfm.txt')
     edge_topology = EdgeTopology.load_edge_topology(r'..\py_share\py_sfm_3448_edge_topology.json')

@@ -6,7 +6,8 @@
 import json
 import toml
 import numpy as np
-from core import glm
+from MM_fitting.core import glm
+# from core import glm
 
 
 class ModelContour:

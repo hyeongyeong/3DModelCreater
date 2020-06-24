@@ -21,6 +21,6 @@ fitting_path = cur_path + '/3DMM-fitting/test/'
 blender_script_path = cur_path + '/3DModelCreater'
 # side_view_detector.run('left_custom_weights.dat', side_picture +'.jpg')
 # front_view_detector.run('shape_predictor_68_face_landmarks.dat', front_picture +'.jpg')
-fitting.run()
+fitting.run(front_picture, side_picture)
 # subprocess.run('python test.py', shell=True)
 # subprocess('python ' + side_detection_path)

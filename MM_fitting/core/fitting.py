@@ -3,7 +3,7 @@
 @author: Yinghao Li
 """
 
-from core import closest_edge_fitting, Blendshape, contour_correspondence, blendshape_fitting, EdgeTopology, \
+from MM_fitting.core import closest_edge_fitting, Blendshape, contour_correspondence, blendshape_fitting, EdgeTopology, \
     LandmarkMapper, linear_shape_fitting, glm, Landmark, MorphableModel, RenderingParameters, Mesh, \
     orthographic_camera_estimation_linear
 
