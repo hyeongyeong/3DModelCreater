@@ -159,7 +159,7 @@ def get_styling_option(STYLER_MODE, head):
             "child_num":8,
 
             # Styling option
-            "styling_process":False,
+            "styling_process":True,
     }
 
     option["eye_right_boundary"] = {
@@ -188,7 +188,7 @@ def get_styling_option(STYLER_MODE, head):
             "child_num":8,
 
             # Styling option
-            "styling_process":False,
+            "styling_process":True,
     }
 
 
@@ -196,7 +196,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/strands00374.pk",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/strands00372.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             
@@ -232,9 +232,9 @@ def get_styling_option(STYLER_MODE, head):
             
             # Shape
             "num_particle": 1000,
-            "hair_step":3,
-            "vertex_group_density":None,
-            "emit_from":"VERT",
+            "hair_step":2,
+            "vertex_group_density":"hair",
+            "emit_from":"FACE",
             "length":3,
             "root_radius":0.12,
             "tip_radius":0.08,
@@ -244,8 +244,8 @@ def get_styling_option(STYLER_MODE, head):
             
             # Child
             "child":True,
-            "child_radius":2,
-            "child_num":8,
+            "child_radius":0.08,
+            "child_num":64,
 
             # Styling option
             "styling_process":False,
@@ -452,24 +452,11 @@ def generate_style(option, scalp_tris=None, num_root=1000, num_vtx=40):
                 min_x = p[0]
             if p[0] > max_x:
                 max_x = p[0]
-    length = (max_x - min_x)/100
-    root_per_area = num_root/total_area
-    for tri in scalp_tris:
-        num = int(root_per_area * area_tri(tri[0], tri[1], tri[2]))
-        num = 1 if num == 0 else num
-        for _ in range(num):
-            roots.append( get_center(tri, gitter=True) )
-            normals.append( normal(tri) )
-    guide_hair = []
-    for i, root in enumerate(roots):
-        n = normals[i]
-        strand = [root]
-        for m in range(1, num_vtx):
-            prev = strand[-1]
-            strand.append(prev + random.uniform(0.6,1.0)*length*n)
-        guide_hair.append(strand)
-    random.shuffle(guide_hair)
-    return guide_hair
+    length = (max_x - min_x)/80
+
+    option["length"] = length
+
+    return None
 
 def generate_styl_lashes(option):
     guide_hair = []
