@@ -72,6 +72,7 @@ def visualize_facial_landmarks(image, shape, file_name, colors=None, alpha=0.6):
             cv2.circle(overlay, (point[0], point[1]), 2, (0,0,0), -1)
 
 
+
         # check if are supposed to draw the jawline
         if name == "Jaw" or name == "Forehead":
             # since the jawline is a non-enclosed facial region,
