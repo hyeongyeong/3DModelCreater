@@ -26,8 +26,7 @@ def run(f_pic, p_pic):
     frontal_pic_name = f_pic
     profile_pic_name = p_pic
     cur_path = os.path.dirname(os.path.abspath(__file__))
-    # frontal_img = cv2.imread(os.path.join(r'..\data', frontal_pic_name + '.tif'))
-    # profile_img = cv2.imread(os.path.join(r'..\data', profile_pic_name + '.tif'))
+
 
     frontal_img = cv2.imread(os.path.join(cur_path + '/../data/'+frontal_pic_name+'.tif'))
     profile_img = cv2.imread(os.path.join(cur_path + '/../data/'+profile_pic_name+'.tif'))
@@ -41,25 +40,26 @@ def run(f_pic, p_pic):
     # scale_param = 1
 
 
-    # morphable_model = MorphableModel.load_model(r"..\py_share\py_sfm_shape_3448.bin")
     morphable_model = MorphableModel.load_model(os.path.join(cur_path + '/../py_share/py_sfm_shape_3448.bin'))
-    blendshapes = Blendshape.load_blendshapes(r"..\py_share\py_expression_blendshapes_3448.bin")
-    landmark_mapper = LandmarkMapper.LandmarkMapper(r'..\py_share\ibug_to_sfm.txt')
-    edge_topology = EdgeTopology.load_edge_topology(r'..\py_share\py_sfm_3448_edge_topology.json')
+    blendshapes = Blendshape.load_blendshapes(os.path.join(cur_path + '/../py_share/py_expression_blendshapes_3448.bin'))
+    landmark_mapper = LandmarkMapper.LandmarkMapper(os.path.join(cur_path + '/../py_share/ibug_to_sfm.txt'))
+    edge_topology = EdgeTopology.load_edge_topology(os.path.join(cur_path + '/../py_share/py_sfm_3448_edge_topology.json'))
     contour_landmarks = contour_correspondence.ContourLandmarks()
-    contour_landmarks.load(r'..\py_share\ibug_to_sfm.txt')
+    contour_landmarks.load(os.path.join(cur_path + '/../py_share/ibug_to_sfm.txt'))
     model_contour = contour_correspondence.ModelContour()
-    model_contour.load(r'..\py_share\sfm_model_contours.json')
-    profile_landmark_mapper = LandmarkMapper.ProfileLandmarkMapper(r'..\py_share\profile_to_sfm.txt')
+    model_contour.load(os.path.join(cur_path + '/../py_share/sfm_model_contours.json'))
+    profile_landmark_mapper = LandmarkMapper.ProfileLandmarkMapper(os.path.join(cur_path + '/../py_share/profile_to_sfm.txt'))
 
     frontal_landmarks = []
     landmark_ids = list(map(str, range(1, 69)))  # generates the numbers 1 to 68, as strings
-    landmarks = utils.read_pts(os.path.join(r'..\data', frontal_pic_name + '.pts'))
+    landmarks = utils.read_pts(os.path.join(cur_path + '/../data/'+frontal_pic_name+'.pts'))
     for i in range(68):
         frontal_landmarks.append(Landmark.Landmark(landmark_ids[i], [landmarks[i][0] * s, landmarks[i][1] * s]))
 
     profile_landmarks = []
-    landmarks = utils.read_pts(os.path.join(r'..\data', profile_pic_name + '.pts'))
+    # landmarks = utils.read_pts(os.path.join(r'..\data', profile_pic_name + '.pts'))
+
+    landmarks = utils.read_pts(os.path.join(cur_path + '/../data/'+profile_pic_name+'.pts'))
     for x in profile_landmark_mapper.right_mapper.keys():
         coor = landmarks[int(x) - 1]
         profile_landmarks.append(Landmark.Landmark(x, [coor[0] * s, coor[1] * s]))
@@ -99,4 +99,4 @@ def run(f_pic, p_pic):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    render.save_ply(py_mesh, frontal_pic_name + '-output', [210, 183, 108], author='Yinghao Li')
+    render.save_ply(py_mesh, frontal_pic_name + '-output', [210, 183, 108], author='Hyunyul Cho')

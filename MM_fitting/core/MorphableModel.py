@@ -3,8 +3,11 @@
 @author: Yinghao Li
 """
 
+import MM_fitting.core
 from MM_fitting.core import Mesh
 import numpy as np
+import sys
+sys.modules['core'] = MM_fitting.core
 import pickle
 
 
