@@ -20,7 +20,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
+            "style_path":os.getcwd()+"/input/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
 
@@ -49,7 +49,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
+            "style_path":os.getcwd()+"/input/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             
@@ -79,7 +79,7 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/custom_" + STYLER_MODE + "_3.pk",
+            "style_path":os.getcwd()+"/input/custom_" + STYLER_MODE + "_3.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             
@@ -159,7 +159,7 @@ def get_styling_option(STYLER_MODE, head):
             "child_num":8,
 
             # Styling option
-            "styling_process":False,
+            "styling_process":True,
     }
 
     option["eye_right_boundary"] = {
@@ -188,7 +188,7 @@ def get_styling_option(STYLER_MODE, head):
             "child_num":8,
 
             # Styling option
-            "styling_process":False,
+            "styling_process":True,
     }
 
 
@@ -196,14 +196,14 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/strands00065.pk",
+            "style_path":os.getcwd()+"/input/strands00372.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             
             # Shape
             "num_particle": 2000,
-            "hair_step":15,
-            "vertex_group_density":"eye_right_boundary",
+            "hair_step":5,
+            "vertex_group_density":None,
             "emit_from":"FACE",
             "length":3,
             "root_radius":0.20,
@@ -221,6 +221,36 @@ def get_styling_option(STYLER_MODE, head):
             "styling_process":True,                
     }
 
+    
+    option["hair_fine_hair"] = {
+            "mode":STYLER_MODE,
+            "head":head,
+            "scalp_name":"hair",
+            "style_path":"",
+            "material":utils_select_material(head, "material_hair"),
+            "psys_name":"auto_" + STYLER_MODE,
+            
+            # Shape
+            "num_particle": 1000,
+            "hair_step":2,
+            "vertex_group_density":"hair",
+            "emit_from":"FACE",
+            "length":3,
+            "root_radius":0.12,
+            "tip_radius":0.08,
+
+            # Physics
+            "physics":False,
+            
+            # Child
+            "child":True,
+            "child_radius":0.08,
+            "child_num":64,
+
+            # Styling option
+            "styling_process":False,
+    }
+
     if STYLER_MODE not in option:    
         print("[[ERR]] MODE error")
         sys.exit(1)
@@ -233,7 +263,6 @@ def load_preset(option):
     with open(option["style_path"], "rb") as fp:
         full_hair = pickle.load(fp)
     random.shuffle(full_hair)
-    print(len(full_hair))
     return full_hair
     
 
@@ -351,6 +380,24 @@ def utils_add_particle_system(option):
 
     return psys
 
+def ustils_add_hair_scalp(head):
+
+    vg = head.vertex_groups.get("hair")
+    if vg != None:
+        return
+    vg = head.vertex_groups.new(name="hair")
+
+    # coords
+    coord_f = open(os.getcwd()+"/input/hair_scalp.pk", "rb")
+    co_list = pickle.load(coord_f)
+    selected = []
+    for v in head.data.vertices:
+        now = list(v.co)
+        if now in co_list:
+            selected.append(v.index)
+    vg.add(selected, 1.0, "ADD")
+
+    coord_f.close()
 
 def set_child(option):
     if option["child"] == True:
@@ -407,10 +454,10 @@ def add_cube(xyz, idx=1):
     bpy.context.scene.collection.objects.link(obj)
     bpy.context.view_layer.objects.active = temp
 
-def generate_style(option, scalp_tris=None, num_root=700, num_vtx=100):
+def generate_style(option, scalp_tris=None, num_root=1000, num_vtx=40):
     mode = option["mode"]
 
-    if mode == "eye_left_boundary" or mode == "eye_right_boundary" or mode == "hair":
+    if mode == "eye_left_boundary" or mode == "eye_right_boundary":
         return generate_styl_lashes(option)
     roots = []
     normals = []
@@ -423,53 +470,11 @@ def generate_style(option, scalp_tris=None, num_root=700, num_vtx=100):
                 min_x = p[0]
             if p[0] > max_x:
                 max_x = p[0]
-    root_per_area = num_root/total_area
-    
-    if mode == "eye_brow_l":
-        force = Vector((100, -9.8, -50))
-        length = (max_x-min_x)/(num_vtx*50)
-    elif mode == "eye_brow_r":
-        force = Vector((-100, -9.8, -50))
-        length = (max_x-min_x)/(num_vtx*50)
-    elif mode == "mustache":
-        force = Vector((0, -98, -15))
-        length = (max_x-min_x)/(num_vtx*10)
-    elif mode == "beard":
-        force = Vector((0, -98, -15))
-        length = (max_x-min_x)/(num_vtx*10)
-    else:
-        force = Vector((0,0,0))
-    force.normalize()
-    print(length)
+    length = (max_x - min_x)/80
 
-    for tri in scalp_tris:
-        num = int(root_per_area * area_tri(tri[0], tri[1], tri[2]))
-        num = 1 if num == 0 else num
-        for _ in range(num):
-            roots.append( get_center(tri, gitter=True) )
-            normals.append( normal(tri) )
+    option["length"] = length
 
-    print("num root: %d" % len(roots))
-    
-    guide_hair = []
-    for i, root in enumerate(roots):
-        n = normals[i]
-        strand = [root]
-        for m in range(1, num_vtx):
-            prev = strand[-1]
-            dir = (n + force*(m))
-            dir.normalize()
-            dir = random.uniform(0.6,1.0)*length*dir
-            strand.append(prev + dir)
-
-        guide_hair.append(strand)
-    random.shuffle(guide_hair)
-
-
-    for i, strand in enumerate(guide_hair):
-        for m, v in enumerate(strand):
-            guide_hair[i][m] = list(v)
-    return guide_hair
+    return None
 
 def generate_styl_lashes(option):
     guide_hair = []
@@ -570,7 +575,6 @@ def load():
     for i in range(len(psys.particles)):
         part = psys.particles[i]
         strand = style[i]
-        print(strand)
         part.location = strand[0]
         
         for m in range(len(part.hair_keys)):

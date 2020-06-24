@@ -23,44 +23,45 @@ class Hair_styler(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'} 
         
     STYLER_MODE = [
-        #"eye_brow_r",
-        #"eye_brow_l",
+        "eye_brow_r",
+        "eye_brow_l",
         #"mustache",
         #"beard",
-        #"eye_left_boundary",
-        #"eye_right_boundary",
-        "hair"
+        "eye_left_boundary",
+        "eye_right_boundary",
+        "hair",
+        "hair_fine_hair"
     ]
     NAME_HEAD = "Man"
 
     def execute(self, context):
 
+        head = utils_select_obj(target=self.NAME_HEAD)
+        if head == None:
+            head = bpy.context.view_layer.objects.active
+        ustils_add_hair_scalp(head)
         for mode in self.STYLER_MODE:
             print("[[INFO]] Styling Hair system : MODE [%s] .... " % mode)
-            self.do_styling(mode)
+            self.do_styling(mode, head)
 
         return {"FINISHED"}
 
 
-    def do_styling(self, STYLER_MODE):
+    def do_styling(self, STYLER_MODE, head):
 
-        head = utils_select_obj(target=self.NAME_HEAD)
-        if head == None:
-            head = bpy.context.view_layer.objects.active
         option = get_styling_option(STYLER_MODE, head)
-        utils_add_particle_system(option)
-
+        
         if option["style_path"] != "":
             preset = load_preset(option)
+            style = self.generate_custom_style(option, preset)
         else:
-            preset = generate_style(option, scalp_tris=self.get_scalp_tris(option, head)) # TODO
+            style = generate_style(option, scalp_tris=self.get_scalp_tris(option, head)) # TODO
         
+        utils_add_particle_system(option)
         self.init_styling(option)
         if option["styling_process"] == True:
-            style = self.generate_custom_style(option, preset)
             self.comb(option, style)
-        else:
-            self.comb(option, preset)
+
         self.finalize_styling(option)
 
 
@@ -74,6 +75,9 @@ class Hair_styler(bpy.types.Operator):
             if len(guide_hair) == option["num_particle"]:
                 break
             
+            if option["mode"] == "hair" and len(selected) < 50:
+                continue
+
             for i in range(len(selected)):
                 selected[i] = transform(selected[i], coord_hair, coord_scalp, scale)
 
@@ -138,7 +142,8 @@ class Hair_styler(bpy.types.Operator):
 
     def fitting_physics(self, option, guided_hair, model, coord_scalp):
         for hair_idx, strand in enumerate(guided_hair):
-            print(hair_idx, len(guided_hair))
+            if hair_idx % 500 == 0:
+                print(hair_idx, len(guided_hair))
             for m in range(1, len(strand)):
                 iter = 0
                 length = (strand[m]-strand[m-1]).length
