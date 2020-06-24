@@ -641,7 +641,8 @@ def get_vertex_eye(target, vg_name,vg_name2, vertex_group_name1,vertex_group_nam
     vg_index2 = []
 
     eye_top_vertex_list = []
-    eye_bot_vertex_list = []
+    eye_bot_left_vertex_list = []
+    eye_bot_right_vertex_list = []
 
     
     # for fa in vs:
@@ -702,20 +703,43 @@ def get_vertex_eye(target, vg_name,vg_name2, vertex_group_name1,vertex_group_nam
         if(v.co.x > range_left and v.co.x < range_right):
             if(v.co.y<land_y[20]):
                 tempv =  tempv+1
-                eye_bot_vertex_list.append((v.index, v.co.x, v.co.y, v.co.z))
+                eye_bot_left_vertex_list.append((v.index, v.co.x, v.co.y, v.co.z))
+
+    sorted(eye_bot_left_vertex_list, key = lambda e: e[1])
+    
+    #print(len(eye_bot_vertex_list))
+
+    for i in range(0,5):
+        eye_bot_left_vertex_list.pop()
+    
+    #print(len(eye_bot_vertex_list))
+    
+    del(eye_bot_left_vertex_list[len(eye_bot_left_vertex_list)-5:len(eye_bot_left_vertex_list)])
+
+    #print(len(eye_bot_vertex_list))
 
     for i in vg_index2:
         v = bm.verts[i]
         
         if(v.co.x > range_left2 and v.co.x < range_right2):
             if(v.co.y<land_y[29]):
-                tempv =  tempv+1
-                eye_bot_vertex_list.append((v.index, v.co.x, v.co.y, v.co.z))
+                tempv2 =  tempv2+1
+                eye_bot_right_vertex_list.append((v.index, v.co.x, v.co.y, v.co.z))
     
+    sorted(eye_bot_right_vertex_list, key = lambda e: e[1])
+    
+    for i in range(0,5):
+        eye_bot_right_vertex_list.pop()
+    
+    
+    del(eye_bot_right_vertex_list[len(eye_bot_right_vertex_list)-6:len(eye_bot_right_vertex_list)])
     
 
-    for i in range(0,tempv+tempv2):
-        bm.verts[eye_bot_vertex_list[i][0]].select = True
+    for i in range(0,len(eye_bot_left_vertex_list)):
+        bm.verts[eye_bot_left_vertex_list[i][0]].select = True
+
+    for i in range(0,len(eye_bot_right_vertex_list)):
+        bm.verts[eye_bot_right_vertex_list[i][0]].select = True
 
    
 
