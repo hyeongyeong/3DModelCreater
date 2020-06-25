@@ -23,14 +23,14 @@ class Hair_styler(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'} 
         
     STYLER_MODE = [
-        "eye_brow_r",
-        "eye_brow_l",
+        #"eye_brow_r",
+        #"eye_brow_l",
+        #"eye_left_boundary",
+        #"eye_right_boundary",
+        "hair",
+        #"hair_fine_hair"
         #"mustache",
         #"beard",
-        "eye_left_boundary",
-        "eye_right_boundary",
-        "hair",
-        "hair_fine_hair"
     ]
     NAME_HEAD = "Man"
 
@@ -92,8 +92,19 @@ class Hair_styler(bpy.types.Operator):
             guide_strand.append(selected[len(selected)-1])
             guide_hair.append(guide_strand)
         self.fitting_proj(option, guide_hair, head, coord_scalp)
+        
         if option["mode"] == "hair":
-            self.fitting_physics(option, guide_hair, head, coord_scalp)
+            self.fitting_physics(option, guide_hair, head)
+            cloth = utils_select_obj(target="Outfit")
+            head_invert = head.matrix_world.inverted()
+            cloth_invert = cloth.matrix_world.inverted()
+            cloth.data.transform(cloth.matrix_world)
+            cloth.data.transform(head_invert)
+            #self.fitting_physics(option, guide_hair, cloth)
+            cloth.data.transform(head.matrix_world)
+            cloth.data.transform(cloth_invert)
+            bpy.context.view_layer.objects.active = head
+        
         guide_hair.sort(key=lambda strand:(strand[0][0], strand[0][1], strand[0],[2]))
         
         return guide_hair
@@ -140,23 +151,30 @@ class Hair_styler(bpy.types.Operator):
         return 
 
 
-    def fitting_physics(self, option, guided_hair, model, coord_scalp):
+    def fitting_physics(self, option, guided_hair, model):
+        verts = []
+        for v in model.data.vertices :
+            verts.append(v.co)
+        coord, _ = self.get_coord(verts)
+
         for hair_idx, strand in enumerate(guided_hair):
             if hair_idx % 500 == 0:
                 print(hair_idx, len(guided_hair))
             for m in range(1, len(strand)):
                 iter = 0
                 length = (strand[m]-strand[m-1]).length
-                while iter<4000:
-                    result, n = is_inside(strand[m], coord_scalp, model)
+                while iter<2:
+                    result, new_position = is_inside(coord, strand[m], model)
                     if result == True:
-                        new = strand[m] + (strand[m]-coord_scalp)*0.05 - strand[m-1]
-                        new.normalize()
-                        strand[m] = strand[m-1]+length*new
+                        #add_cube(model.matrix_world@new_position)
+                        #move = new_position - strand[m-1]
+                        #move.normalize()
+                        #new = strand[m-1]+length*(move)
+                        #strand[m] = Vector([new[0], strand[m][1], new[2]])
+                        strand[m] = new_position
                         iter += 1
                     else:
                         break
-            strand[0] = strand[0] + (strand[0]-coord_scalp)*0.05
 
 
     def get_scalp_tris(self, option, head):

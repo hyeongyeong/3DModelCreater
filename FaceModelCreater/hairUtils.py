@@ -40,6 +40,7 @@ def get_styling_option(STYLER_MODE, head):
             "child":False,
             "child_radius":2,
             "child_num":8,
+            "child_type":"SIMPLE",
 
             # Styling option
             "styling_process":True,
@@ -69,6 +70,7 @@ def get_styling_option(STYLER_MODE, head):
             "child":False,
             "child_radius":2,
             "child_num":8,
+            "child_type":"SIMPLE",
 
             # Styling option
             "styling_process":True,
@@ -99,6 +101,7 @@ def get_styling_option(STYLER_MODE, head):
             "child":False,
             "child_radius":3,
             "child_num":8,
+            "child_type":"SIMPLE",
 
             # Styling option
             "styling_process":True,    
@@ -128,6 +131,7 @@ def get_styling_option(STYLER_MODE, head):
             "child":False,
             "child_radius":3,
             "child_num":8,
+            "child_type":"SIMPLE",
 
             # Styling option
             "styling_process":True,
@@ -157,6 +161,7 @@ def get_styling_option(STYLER_MODE, head):
             "child":False,
             "child_radius":2,
             "child_num":8,
+            "child_type":"SIMPLE",
 
             # Styling option
             "styling_process":True,
@@ -186,6 +191,7 @@ def get_styling_option(STYLER_MODE, head):
             "child":False,
             "child_radius":2,
             "child_num":8,
+            "child_type":"SIMPLE",
 
             # Styling option
             "styling_process":True,
@@ -196,16 +202,17 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            "style_path":os.getcwd()+"/input/strands00372.pk",
+            #"style_path":os.getcwd()+"/input/strands00001.pk",
+            "style_path":os.getcwd()+"/FaceModelCreater/backup/strands00101.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
             
             # Shape
             "num_particle": 2000,
-            "hair_step":5,
+            "hair_step":10,
             "vertex_group_density":None,
             "emit_from":"FACE",
-            "length":3,
+            "length":1,
             "root_radius":0.20,
             "tip_radius":0.15,
 
@@ -214,8 +221,9 @@ def get_styling_option(STYLER_MODE, head):
             
             # Child
             "child":True,
-            "child_radius":0.12,
-            "child_num":8,
+            "child_radius":0.07,
+           "child_num":8,
+           "child_type":"SIMPLE",
 
             # Styling option
             "styling_process":True,                
@@ -231,7 +239,7 @@ def get_styling_option(STYLER_MODE, head):
             "psys_name":"auto_" + STYLER_MODE,
             
             # Shape
-            "num_particle": 1000,
+            "num_particle": 100,
             "hair_step":2,
             "vertex_group_density":"hair",
             "emit_from":"FACE",
@@ -245,7 +253,8 @@ def get_styling_option(STYLER_MODE, head):
             # Child
             "child":True,
             "child_radius":0.08,
-            "child_num":64,
+            "child_num":512,
+            "child_type":"INTERPOLATED",
 
             # Styling option
             "styling_process":False,
@@ -285,13 +294,19 @@ def test_normal_dir(normals, threshold=0.2, direction=[0,0,1]):
 
     
 def is_inside(p1, p2, model):
+    p1 = Vector((p1[0], p2[1], p1[2]))
+    origin = p2
+    dir = p2 - p1
+    result = model.ray_cast(origin, dir)
     
-    origin = p1
-    dir = p1 - p2
-    dist = (p2 - p1).length
-    result = model.ray_cast(origin, dir, distance=dist)
-    n = Vector((0, result[2][1], result[2][2]))
-    return result[0], n
+    if result == False:
+        print("[[ERROR]] Origin error")
+        return False, None
+    else:
+        if result[0] == True and ((p2 - p1).length < (Vector(result[1])-p1).length): # inside
+            return True, result[1]+dir/100
+        else: 
+            return False, None
 
 
 def find_nearest_point(root, scalp_tris):
@@ -404,7 +419,7 @@ def set_child(option):
         head = option["head"]
         psys_name = option["psys_name"]
         psys = head.particle_systems[psys_name]
-        psys.settings.child_type = "SIMPLE"
+        psys.settings.child_type = option["child_type"]
         psys.settings.child_nbr = option["child_num"]
         psys.settings.rendered_child_count = option["child_num"]
         psys.settings.child_length = 1.0
@@ -446,7 +461,7 @@ def utils_select_material(head, mat_name):
 
 def add_cube(xyz, idx=1):
     temp = bpy.context.active_object
-    size = 0.5
+    size = 0.01
     if idx == 0:
         size = 0.2
     bpy.ops.mesh.primitive_cube_add(location=(xyz[0], xyz[1], xyz[2]), size=size)
