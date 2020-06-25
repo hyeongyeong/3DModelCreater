@@ -10,7 +10,9 @@ class Model_PT_Panel(bpy.types.Panel):
         layout = self.layout
 
         row = layout.row()
-        row.operator('mesh.create_model_main',text= "create Face")
+        row.operator('my.button', text = "create Model")
+        # row = layout.row()
+        # row.operator('mesh.create_model_main',text= "create Face")
 
-        row = layout.row()
-        row.operator('mesh.hair_styler', text="add hair system")
+        # row = layout.row()
+        # row.operator('mesh.hair_styler', text="add hair system")

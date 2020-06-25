@@ -2,8 +2,8 @@ import os
 import bpy
 import bmesh
 import numpy as np
-from .merge import *
-from .createRegionGroup import duplicate_obj
+from FaceModelCreater.merge import *
+from FaceModelCreater.createRegionGroup import duplicate_obj
 from mathutils import Matrix
 
 ModelFileName = "seok_f-output" 
