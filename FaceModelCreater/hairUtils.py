@@ -202,11 +202,10 @@ def get_styling_option(STYLER_MODE, head):
             "mode":STYLER_MODE,
             "head":head,
             "scalp_name":STYLER_MODE,
-            #"style_path":os.getcwd()+"/input/strands00001.pk",
-            "style_path":os.getcwd()+"/FaceModelCreater/backup/strands00101.pk",
+            "style_path":os.getcwd()+"/input/strands00043.pk",
+            #"style_path":os.getcwd()+"/FaceModelCreater/backup/strands00043.pk",
             "material":utils_select_material(head, "material_" + STYLER_MODE),
             "psys_name":"auto_" + STYLER_MODE,
-            
             # Shape
             "num_particle": 2000,
             "hair_step":10,
@@ -221,7 +220,7 @@ def get_styling_option(STYLER_MODE, head):
             
             # Child
             "child":True,
-            "child_radius":0.07,
+            "child_radius":0.07, #0.07,
            "child_num":8,
            "child_type":"SIMPLE",
 
@@ -595,3 +594,18 @@ def load():
         for m in range(len(part.hair_keys)):
             key = part.hair_keys[m]
             key.co_local = strand[m]
+
+def print_scalp():
+        
+    f = open("./hair_scalp2.pk", "wb")
+
+    head = bpy.context.view_layer.objects.active
+    scalp = []
+    for v in head.data.vertices :
+        for g in v.groups :
+            if g.group == head.vertex_groups["hair"].index :
+                print(v.co)
+                scalp.append(list(v.co))
+    pickle.dump(scalp, f)
+
+    f.close()

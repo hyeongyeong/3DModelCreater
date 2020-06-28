@@ -28,7 +28,7 @@ class Hair_styler(bpy.types.Operator):
         #"eye_left_boundary",
         #"eye_right_boundary",
         "hair",
-        #"hair_fine_hair"
+        "hair_fine_hair"
         #"mustache",
         #"beard",
     ]
