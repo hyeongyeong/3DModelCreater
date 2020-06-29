@@ -86,8 +86,6 @@ def extract_nose(objs):
     bpy.ops.mesh.separate(type='SELECTED')
 
     nose_objs = [obj for obj in scn.objects if not obj.name in names][0]
-
-
     bpy.ops.object.mode_set(mode = 'OBJECT')    
     bpy.ops.object.select_all(action='DESELECT')
     nose_objs.select_set(True)
@@ -151,18 +149,28 @@ def store_boundary_loop(objs):
 def merge(objs, body_objs):
     #extract boundary edge loop
     new_objs = duplicate_obj(objs)
+    bpy.ops.object.mode_set(mode = "OBJECT")
     bpy.ops.object.select_all(action = 'DESELECT')
     new_objs.select_set(True)
     bpy.context.view_layer.objects.active = new_objs
     bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.select_all(action='DESELECT')
     bpy.ops.object.vertex_group_set_active(group=str("face_edge"))
     bpy.ops.object.vertex_group_select()
+
+    bpy.ops.object.mode_set(mode = "OBJECT")
+
+
+    face_v = [v for v in bpy.context.active_object.data.vertices if v.select]
+    print(len(face_v))
+
 
 
     scn = bpy.context.scene
     names = [obj.name for obj in scn.objects]
 
+    bpy.ops.object.mode_set(mode ="EDIT")
     bpy.ops.mesh.separate(type='SELECTED')
 
     extrude_objs = [obj for obj in scn.objects if not obj.name in names][0]
@@ -172,6 +180,14 @@ def merge(objs, body_objs):
     bpy.ops.object.select_all(action = 'DESELECT')
     extrude_objs.select_set(True)
     bpy.context.view_layer.objects.active = extrude_objs  
+
+
+    extrude_normal = []
+    print(len(extrude_objs.data.vertices))
+    for i in range(len(extrude_objs.data.vertices)):
+        extrude_objs.data.vertices[i].normal = face_v[i].normal
+        extrude_normal.append(extrude_objs.data.vertices[i].normal)
+
     shrink_objs = duplicate_obj(extrude_objs)
     
     bpy.ops.object.select_all(action = 'DESELECT')
@@ -226,11 +242,18 @@ def merge(objs, body_objs):
     bpy.context.view_layer.objects.active =shrink_objs
     vg = shrink_objs.vertex_groups.new(name="body_edge")
     vert = []
-    for v in shrink_objs.data.vertices:
-        vert.append(v.index)
+    
+    for i in range(len(shrink_objs.data.vertices)):
+        shrink_objs.data.vertices[i].normal = extrude_normal[i]
+        vert.append(shrink_objs.data.vertices[i].index)
+
+    # for v in shrink_objs.data.vertices:
+    #     vert.append(v.index)
     vg.add(vert, 1.0, 'ADD')
     bpy.ops.object.modifier_add(type='SHRINKWRAP')
     bpy.context.object.modifiers["Shrinkwrap"].target = body_objs
+    bpy.context.object.modifiers["Shrinkwrap"].wrap_method = 'TARGET_PROJECT'
+    bpy.context.object.modifiers["Shrinkwrap"].wrap_mode = 'INSIDE'
     bpy.ops.object.modifier_apply(apply_as='DATA',modifier= "Shrinkwrap")
 
 
@@ -241,18 +264,23 @@ def merge(objs, body_objs):
     bpy.context.view_layer.objects.active = body_objs
     bpy.ops.object.join()
 
-
-
     # this is for testing. Fix it when commit
-    # bpy.ops.object.mode_set(mode = 'OBJECT')
-    # bpy.ops.object.select_all(action='DESELECT')
-    # body_objs.select_set(True)
-    # bpy.context.view_layer.objects.active =body_objs
-    # bpy.ops.object.mode_set(mode = 'EDIT')
-    # bpy.ops.mesh.select_all(action='SELECT')
-    # bpy.ops.mesh.select_all(action='DESELECT')
-    # bpy.ops.object.vertex_group_set_active(group=str("face_edge"))
-    # bpy.ops.object.vertex_group_select()
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    body_objs.select_set(True)
+    bpy.context.view_layer.objects.active =body_objs
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.select_all(action='DESELECT')
+    bpy.ops.object.vertex_group_set_active(group=str("body_edge"))
+    bpy.ops.object.vertex_group_select()
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+    will_modified = [v for v in bpy.context.active_object.data.vertices if v.select] # use this vertices to transfer normal to shrink object & extrude object
+
+
+    for i in range(len(will_modified)):
+        will_modified[i].normal = extrude_normal[i]
+
 
     model = os.getcwd() + "/external/intermediate/nose.obj"
     data = os.getcwd() + "/external/intermediate/man_nose.obj"
@@ -269,6 +297,7 @@ def merge(objs, body_objs):
 
     objs.matrix_world = matrix
     #join face and body
+    bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
     body_objs.select_set(True)
     objs.select_set(True)
@@ -286,5 +315,8 @@ def merge(objs, body_objs):
     bpy.ops.object.vertex_group_select()
     bpy.ops.object.vertex_group_set_active(group=str("body_edge"))
     bpy.ops.object.vertex_group_select()
-    bpy.ops.mesh.bridge_edge_loops()   
+    bpy.ops.mesh.bridge_edge_loops() 
+    bpy.ops.mesh.bridge_edge_loops(interpolation='SURFACE')
+    bpy.ops.mesh.bridge_edge_loops(number_cuts=10, interpolation='SURFACE')
+    
 
