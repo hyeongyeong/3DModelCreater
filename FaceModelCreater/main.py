@@ -75,16 +75,18 @@ class main_Operator(bpy.types.Operator):
         reset_transform(tongue)
         reset_transform(teeth1)
         reset_transform(teeth2)
-        reset_transform(eye1)
-        reset_transform(eye2)
+        # reset_transform(eye1)
+        # reset_transform(eye2)
         
         align_matrix = icp()
         align(face,align_matrix)
         align(tongue, align_matrix)
         align(teeth1, align_matrix)
         align(teeth2, align_matrix)
-        align(eye1, align_matrix)
-        align(eye2, align_matrix)
+        # align(eye1, align_matrix)
+        # align(eye2, align_matrix)
+        align_eye(eye1, align_matrix)
+        align_eye(eye2, align_matrix)
         
         merge(face, body_objs)
         

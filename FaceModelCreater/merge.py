@@ -43,6 +43,25 @@ def icp():
 
     return matrix
 
+
+def align_eye(objs, matrix):
+    bpy.ops.object.select_all(action='DESELECT')
+    objs.select_set(True)
+    bpy.context.view_layer.objects.active = objs
+    matrix = Matrix(matrix)
+    print(matrix)
+    print(objs.location)
+    objs.location.x = objs.location.x * matrix[0][0] + matrix[3][0]
+    objs.location.y = objs.location.y * matrix[0][0] + matrix[3][1]
+    objs.location.z = objs.location.z * matrix[0][0] + matrix[3][2]
+
+    objs.scale.x = objs.scale.x * matrix[0][0]
+    objs.scale.y = objs.scale.y * matrix[0][0]
+    objs.scale.z = objs.scale.z * matrix[0][0]
+
+    
+    # objs.matrix_world = Matrix(matrix) * objs.matrix_world
+
 def align(objs, matrix):
 
 
@@ -318,5 +337,5 @@ def merge(objs, body_objs):
     bpy.ops.mesh.bridge_edge_loops() 
     bpy.ops.mesh.bridge_edge_loops(interpolation='SURFACE')
     bpy.ops.mesh.bridge_edge_loops(number_cuts=10, interpolation='SURFACE')
-    
+
 
