@@ -402,7 +402,7 @@ def ustils_add_hair_scalp(head):
     vg = head.vertex_groups.new(name="hair")
 
     # coords
-    coord_f = open(os.getcwd()+"/input/hair_scalp.pk", "rb")
+    coord_f = open(os.getcwd()+"/input/hair_scalp3.pk", "rb")
     co_list = pickle.load(coord_f)
     selected = []
     for v in head.data.vertices:
