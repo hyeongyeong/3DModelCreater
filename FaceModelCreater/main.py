@@ -4,6 +4,7 @@ import bmesh
 import numpy as np
 from .merge import *
 from .createRegionGroup import duplicate_obj
+from .generate_rig import generate_rig
 from mathutils import Matrix
 
 ModelFileName = "seok_f-output" 
@@ -71,6 +72,15 @@ class main_Operator(bpy.types.Operator):
         teeth2 = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]
         eye1 = bpy.data.objects["Sphere"]
         eye2 = bpy.data.objects["Sphere.001"]
+
+        parts_locations = {'eye_r':Vector(eye1.location),
+                           'eye_l':Vector(eye2.location),
+                           'tongue':Vector(tongue.location),
+                           'teeth_upper':Vector(teeth2.location),
+                           'teeth_lower':Vector(teeth1.location)}
+
+        print(parts_locations)
+
         reset_transform(face)
         reset_transform(tongue)
         reset_transform(teeth1)
@@ -87,7 +97,10 @@ class main_Operator(bpy.types.Operator):
         align(eye2, align_matrix)
         
         merge(face, body_objs)
-        
+        generate_rig(parts_locations, align_matrix)
+
+
         bpy.ops.mesh.apply_texturing()
-        
+
+
         return {'FINISHED'}

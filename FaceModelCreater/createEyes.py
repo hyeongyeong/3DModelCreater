@@ -86,8 +86,8 @@ def optimize_eye_loc(coord):
     scale = Vector((19,19,19))
     rot = Vector((radians(15), radians(5), 0))
 
-    right = (coord_right[0].x  + scale.x , coord_right[2].y, (coord_right[2].z + coord_right[4].z)/2 - scale.z )
-    left = (coord_left[3].x - scale.x, coord_left[1].y, (coord_left[5].z + coord_left[1].z ) / 2 - scale.z)
+    right = (coord_right[0].x  + scale.x , coord_right[2].y-5, (coord_right[2].z + coord_right[4].z)/2 - scale.z )
+    left = (coord_left[3].x - scale.x, coord_left[1].y-5, (coord_left[5].z + coord_left[1].z ) / 2 - scale.z)
 
     eyes = np.array([right, left, scale, rot])
     
