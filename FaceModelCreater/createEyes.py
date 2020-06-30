@@ -392,7 +392,6 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
             eye_texture_path = bpy.context.scene['file_path']['eye_tex']
 
             target = bpy.context.scene['my_obj']['ply']
-            dup = duplicate_obj(target)
             
             coord = file_read(landmark_point_file_path)
             
