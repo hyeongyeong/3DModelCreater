@@ -39,6 +39,12 @@ class main_Operator(bpy.types.Operator):
         # get global file path
         setGlobalFilePath()
         
+        # set light 
+        bpy.data.objects["Cube"].select_set(True)
+        bpy.context.view_layer.objects.active = bpy.data.objects['Light']
+        bpy.context.object.data.type = 'SUN'
+        bpy.context.object.data.energy = 5
+
         bpy.ops.import_mesh.ply(filepath=bpy.context.scene['file_path']['face'])
         bpy.ops.object.shade_smooth()
 
@@ -59,13 +65,13 @@ class main_Operator(bpy.types.Operator):
 
         bpy.ops.mesh.add_eyes()
         bpy.ops.mesh.create_region_group()
-
-        bpy.ops.mesh.apply_texturing()
+        
+        ##### make philtrum
+        bpy.ops.mesh.create_philtrum()
         bpy.ops.mesh.nostrill()
         bpy.ops.mesh.mouth()
 
         #transformation reset #################################
-        
         tongue = bpy.data.objects["tongue_lowres_Mesh.001"]
         teeth1 = bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"]
         teeth2 = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]

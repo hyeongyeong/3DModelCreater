@@ -33,7 +33,9 @@ from . nostril import nostril
 from . faceTexturing import MESH_OT_apply_texturing
 from . hairStyler import Hair_styler
 from . button import MY_BUTTON_OT_Button
+from . createPhiltrum import MESH_OT_create_philtrum
 
-classes = (main_Operator, Model_PT_Panel,MY_BUTTON_OT_Button, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, nostril, MESH_OT_apply_texturing, Hair_styler)
+classes = (main_Operator, Model_PT_Panel,MY_BUTTON_OT_Button, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, nostril, MESH_OT_apply_texturing, Hair_styler,MESH_OT_create_philtrum)
+
 
 register,unregister = bpy.utils.register_classes_factory(classes)

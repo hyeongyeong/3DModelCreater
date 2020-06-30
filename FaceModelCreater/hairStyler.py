@@ -23,10 +23,10 @@ class Hair_styler(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'} 
         
     STYLER_MODE = [
-        #"eye_brow_r",
-        #"eye_brow_l",
-        #"eye_left_boundary",
-        #"eye_right_boundary",
+        "eye_brow_r",
+        "eye_brow_l",
+        "eye_left_boundary",
+        "eye_right_boundary",
         "hair",
         "hair_fine_hair"
         #"mustache",
