@@ -28,7 +28,95 @@ def setGlobalFilePath():
     bpy.context.scene['file_path']['tongue_texture'] = os.getcwd() + "/input/tongue_BaseColor.png"
     bpy.context.scene['file_path']['teeth_texture'] = os.getcwd() + "/input/jaw_teeth_BaseColor.png"
 
-             
+
+
+
+class step_one(bpy.types.Operator):
+    bl_idname = "step.one"
+    bl_label = "Step 1"
+    bl_description = "Step one"
+
+    def execute(self,context):
+        setGlobalFilePath()
+        
+        # set light 
+        bpy.data.objects["Cube"].select_set(True)
+        bpy.context.view_layer.objects.active = bpy.data.objects['Light']
+        bpy.context.object.data.type = 'SUN'
+        bpy.context.object.data.energy = 5
+
+        bpy.ops.import_mesh.ply(filepath=bpy.context.scene['file_path']['face'])
+        bpy.ops.object.shade_smooth()
+
+        bpy.context.scene['my_obj']['ply'] = bpy.data.objects[ModelFileName]
+        face = bpy.context.scene['my_obj']['ply']
+
+        extract_nose(face) # this function should be called before any modification
+
+        bpy.ops.wm.collada_import(filepath=bpy.context.scene['file_path']['body'])
+        bpy.ops.object.shade_smooth()
+        bpy.context.scene['body_obj']['dae'] = bpy.data.objects[body_file_name]
+
+        
+        body_objs = bpy.data.objects[body_file_name]
+        body_objs_data = body_objs.data
+        
+        store_boundary_loop(face)
+
+        bpy.ops.mesh.add_eyes()
+        bpy.ops.mesh.create_region_group()
+        
+        ##### make philtrum
+        bpy.ops.mesh.create_philtrum()
+        bpy.ops.mesh.nostrill()
+        bpy.ops.mesh.mouth()
+
+        #transformation reset #################################
+        tongue = bpy.data.objects["tongue_lowres_Mesh.001"]
+        teeth1 = bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"]
+        teeth2 = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]
+        eye1 = bpy.data.objects["Sphere"]
+        eye2 = bpy.data.objects["Sphere.001"]
+        reset_transform(face)
+        reset_transform(tongue)
+        reset_transform(teeth1)
+        reset_transform(teeth2)
+        return {'FINISHED'}
+
+
+class step_two(bpy.types.Operator):
+    bl_idname = "step.two"
+    bl_label = "Step 2"
+    bl_description = "Step two"
+
+    def execute(self,context):
+        face = bpy.context.scene['my_obj']['ply']
+        tongue = bpy.data.objects["tongue_lowres_Mesh.001"]
+        teeth1 = bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"]
+        teeth2 = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]
+        eye1 = bpy.data.objects["Sphere"]
+        eye2 = bpy.data.objects["Sphere.001"]
+        body_objs = bpy.data.objects[body_file_name]
+        align_matrix = icp()
+        align(face,align_matrix)
+        align(tongue, align_matrix)
+        align(teeth1, align_matrix)
+        align(teeth2, align_matrix)
+        # align(eye1, align_matrix)
+        # align(eye2, align_matrix)
+        align_eye(eye1, align_matrix)
+        align_eye(eye2, align_matrix)
+        
+        merge(face, body_objs)
+        
+        bpy.ops.mesh.apply_texturing()
+        return {'FINISHED'}
+
+
+
+
+
+
 class main_Operator(bpy.types.Operator):
     bl_idname =  "mesh.create_model_main"
     bl_label = "Create Model"
