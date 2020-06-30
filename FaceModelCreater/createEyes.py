@@ -349,7 +349,32 @@ def create_eye_hole(target, planes):
         vg=bpy.context.object.vertex_groups.new(name=vg_name)
         bpy.ops.object.vertex_group_assign()
         delete_object(new_obj)
-               
+
+def create_eye_lid(face, vg_name):
+
+    lid_thickness = -5
+
+    mode = bpy.context.active_object.mode
+
+    face_bm = toggle_edit_mode(face)
+
+    bpy.ops.object.vertex_group_set_active(group= vg_name)
+    bpy.ops.object.vertex_group_select()
+
+    bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value":(0, 0, lid_thickness)})
+
+    bpy.ops.object.vertex_group_set_active(group= vg_name)
+    bpy.ops.object.vertex_group_select()
+
+    bpy.ops.mesh.separate(type='SELECTED')
+
+    for obj in bpy.context.selected_objects:
+        if not obj == face :
+            obj.name = "eye_lid"
+
+    bpy.ops.object.mode_set(mode=mode)
+
+
 class MESH_OT_add_eyes(Operator, AddObjectHelper):
     """Create a new Mesh Object"""
     bl_idname = "mesh.add_eyes"
@@ -367,6 +392,7 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
             eye_texture_path = bpy.context.scene['file_path']['eye_tex']
 
             target = bpy.context.scene['my_obj']['ply']
+            dup = duplicate_obj(target)
             
             coord = file_read(landmark_point_file_path)
             
@@ -374,10 +400,13 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
 
             planes = make_curved_eye_plane(self, context, eye_point)
             
-            # create_eye_hole(target, planes)
             create_eye_hole(target, planes)
 
             add_eyeball(self, context, eye_point , eye_texture_path)
+
+            create_eye_lid(target, "eye_left_boundary")
+            create_eye_lid(target, "eye_right_boundary")
+
             
         except IndexError:
             print("Please select target face mesh!")
