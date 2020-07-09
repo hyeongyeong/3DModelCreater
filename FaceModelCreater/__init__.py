@@ -34,8 +34,9 @@ from . faceTexturing import MESH_OT_apply_texturing
 from . hairStyler import Hair_styler
 from . button import MY_BUTTON_OT_Button, step_four, step_three
 from . createPhiltrum import MESH_OT_create_philtrum
+from . uvmap import apply_UVMap
 
-classes = (main_Operator, step_one, step_two, step_three, step_four, Model_PT_Panel,MY_BUTTON_OT_Button, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, nostril, MESH_OT_apply_texturing, Hair_styler,MESH_OT_create_philtrum)
+classes = (main_Operator, step_one, step_two, step_three, step_four, Model_PT_Panel,MY_BUTTON_OT_Button, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, nostril, MESH_OT_apply_texturing, Hair_styler,MESH_OT_create_philtrum, apply_UVMap)
 
 
 register,unregister = bpy.utils.register_classes_factory(classes)

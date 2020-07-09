@@ -27,7 +27,11 @@ def setGlobalFilePath():
     bpy.context.scene['file_path']['body'] = os.getcwd() + "/input/" + body_file_name + ".dae"
     bpy.context.scene['file_path']['tongue_texture'] = os.getcwd() + "/input/tongue_BaseColor.png"
     bpy.context.scene['file_path']['teeth_texture'] = os.getcwd() + "/input/jaw_teeth_BaseColor.png"
-
+    bpy.context.scene['file_path']['wrinkle_texture'] = os.getcwd() + "/input/wrinkle_texture.png"
+    bpy.context.scene['file_path']['face_texture'] = os.getcwd() + "/input/face_image_texture.tif"
+    bpy.context.scene['file_path']['body_texture'] = os.getcwd() + "/input/body_skin_texture.jpg"
+    bpy.context.scene['file_path']['uv_map'] = os.getcwd() + "/input/uv_map.txt"
+             
 
 
 
@@ -62,6 +66,8 @@ class step_one(bpy.types.Operator):
         body_objs_data = body_objs.data
         
         store_boundary_loop(face)
+
+        bpy.ops.mesh.apply_uvmap()
 
         bpy.ops.mesh.add_eyes()
         bpy.ops.mesh.create_region_group()
