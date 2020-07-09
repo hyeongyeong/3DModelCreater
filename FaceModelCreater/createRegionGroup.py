@@ -20,7 +20,7 @@ import numpy as np
 from math import radians
 from .mouthCapacity import SelectObjectsInBound
 from .createEyes import toggle_edit_mode
-
+import math
 
 def delete_nose_hole(objs_data):
     f= open(bpy.context.scene['file_path']['point'],"r")
@@ -873,6 +873,158 @@ def create_boundary_loop_vg(target, vg_name, new_vg_name):
 
     bpy.ops.mesh.select_all(action = 'DESELECT')
 
+def mesh_modify_test(face):
+
+    mode = bpy.context.active_object.mode
+
+    face_bm = toggle_edit_mode(face)
+
+    bpy.ops.mesh.select_mode(type="FACE")
+    bpy.ops.mesh.select_all(action='SELECT')
+
+    bpy.ops.object.vertex_group_set_active(group= "eye_brow_r")
+    bpy.ops.object.vertex_group_deselect()
+
+    bpy.ops.object.vertex_group_set_active(group= "eye_brow_l")
+    bpy.ops.object.vertex_group_deselect()
+    
+    selectedFaces = [v for v in face_bm.faces if not v.select]
+
+    bpy.ops.mesh.select_all(action='DESELECT')
+    for s in selectedFaces:
+        s.select = True
+        normal_group_x = []
+        normal_group_y = []
+        normal_group_z = []
+        for v in s.verts:
+            for f in v.link_faces:
+                f.select = True
+                normal_group_x.append(f.normal.x)
+                normal_group_y.append(f.normal.y)
+                normal_group_z.append(f.normal.z)
+        
+        ave_x = sum(normal_group_x) / len(normal_group_x)
+        ave_y = sum(normal_group_y) / len(normal_group_y)
+        ave_z = sum(normal_group_z) / len(normal_group_z)
+        s.normal = Vector((ave_x,ave_y, ave_z))
+
+    # rangedFaces = [v for v in face_bm.faces if not v.select]
+
+    bpy.ops.object.mode_set(mode=mode)
+
+def mesh_remove_doubles(face):
+
+    mode = bpy.context.active_object.mode
+
+    face_bm = toggle_edit_mode(face)
+
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.remove_doubles(threshold = 0.05)
+
+    bpy.ops.mesh.select_all(action='DESELECT')
+    bpy.ops.mesh.select_mode(type = 'FACE')
+    bpy.ops.mesh.select_interior_faces()
+    bpy.ops.mesh.delete(type='FACE')
+    bpy.ops.mesh.select_mode(type = 'VERT')
+    # selectedVerts = [v for v in face_bm.verts if v.select]
+
+    # selectedVerts.sort(key = lambda e: (e.co[0],e.co[1],e.co[2]), reverse=True)
+    
+    # for i in range(1,len(selectedVerts)) :
+    #     bpy.ops.mesh.select_all(action='DESELECT')
+    #     if np.array_equal(selectedVerts[i-1].co, selectedVerts[i].co):
+    #         print("dup")
+            
+        # print(i.co)
+    
+    bpy.ops.object.mode_set(mode=mode)
+
+def add_cube(xyz):
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.ops.mesh.primitive_cube_add(location=xyz, size=0.01)
+
+
+
+def distance_test(coord, target, vg_name) :
+    
+    for c in coord:
+        add_cube(c)
+        
+    face_bm = toggle_edit_mode(target)
+    bpy.ops.mesh.select_all(action='SELECT')
+
+    selectedVerts = [v for v in face_bm.verts if v.select]
+    
+    
+    bpy.ops.mesh.select_all(action='DESELECT')
+    distance_var = 0.9
+    vertex_index = []
+    before = 0
+    # vg_array = []
+    for v in selectedVerts:
+        for c in coord:
+            dist = math.sqrt((v.co.x - c.x)**2 + (v.co.y - c.y)**2 + (v.co.z - c.z)**2) 
+            if dist < distance_var :
+                # bpy.ops.mesh.select_all(action='DESELECT')
+                v.select = True
+                
+                # if not str(type(before)) == "<class 'int'>" :
+                #     before.select = True
+                #     bpy.ops.mesh.shortest_path_select()   
+                #     vertex_index.append([v for v in face_bm.verts if v.select])
+                #     bmesh.update_edit_mesh(target.data, False, False) 
+
+                # before = v
+                # break
+                
+
+    # bpy.ops.mesh.select_all(action='DESELECT')
+
+    # vertex_list = set(sum(vertex_index, []))
+
+    # for v in vertex_list:
+    #     v.select = True          
+
+    bpy.context.object.vertex_groups.new(name=vg_name)
+    bpy.ops.object.vertex_group_assign()
+                
+
+def model_index_to_region():
+
+    eye_brow_right_index = [590,658,660,662,664,666,668,674,1128,1167,1168,1204,1292,1700,2091,2216,2470,2475,2477,2553,2555,2556,2558,2642,2643,2669]
+    eye_brow_left_index = [157,225,227,229,231,233,235,241,1127,1165,1166,1203,1642,2086,2213,2466,2473,2474,2548,2549,2551,2552,2640,2667]
+    lips = [82, 263, 264, 265, 314, 315, 328, 329, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 
+    420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430,431,432,442,443,508,519,692,693,694,735,736,749,812,813,814,815,816,817,818,819,820,821,822,823,824,825,826,
+    827,828,829,830,831,832,833,834,835,836,837,838,839,840,841,1382,1383,
+    1398,1399,1404,1405,1414,1415,1416,1417,1426,1427,1444,1445,1448,1449,1450,1451,1456,1457,1464,1465,1468,1469,1478,1479,1486,1487,1488,1489,1490,1491,1492,1493,1501,1518,1519,1530,1531,
+    1532,1533,1536,1537,1538,1539,1554,1555,1558,1559,1562,1563,1568,1569,1587,1588,1589,1600,1601,1606,1607,1648,1649,1664,1665,1706,1707,1722,1723,2936,2962,2964,2993,2994,3008,3009,3010, 3011,
+    3012, 3013, 3042, 3044,3045,3046,3047,3055,3056,3059,3060,3061,3080,3081,3082,3083,3084,3085,3086,3087,3088,3089, 3090, 3091, 3114, 3115,3116, 3117,3118, 3119,3125, 3128, 3154 ,3155,
+    3156, 3157,3158, 3159, 3162, 3163, 3164, 3165, 3166, 3167, 3168, 3169, 3170, 3171, 3172, 3173, 3175, 3179, 3186, 3187, 3188, 3189, 3205, 3206, 3207, 3209, 3210, 3211, 3212, 3213, 3232,
+    3233, 3234, 3235, 3236, 3237, 3247, 3248, 3249, 3250, 3251, 3252, 3253, 3254, 3255, 3256, 3257, 3258, 3259, 3260, 3261, 3262, 3263, 3275, 3281, 3283, 3300, 3301, 3302, 3303, 3304, 3305,
+    3308, 3325, 3326, 3327, 3328, 3329, 3331, 3332, 3333, 3334, 3335, 3336, 3374, 3375, 3376, 3379, 3380, 3381, 3382, 3383, 3384, 3387, 3388, 3389, 3390, 3391, 3392, 3393, 3404, 3405, 3406, 3426,
+    3427, 3428, 3429, 3430, 3431, 3435, 3446, 3447]
+
+    face_bm = toggle_edit_mode(bpy.context.scene['my_obj']['ply'])
+
+    bpy.ops.mesh.select_all(action='DESELECT')
+    for v in eye_brow_right_index:
+        face_bm.verts[v].select = True  
+    bpy.context.object.vertex_groups.new(name="eye_brow_right")
+    bpy.ops.object.vertex_group_assign()
+
+    bpy.ops.mesh.select_all(action='DESELECT')
+    for v in eye_brow_left_index:
+        face_bm.verts[v].select = True  
+    bpy.context.object.vertex_groups.new(name="eye_brow_left")
+    bpy.ops.object.vertex_group_assign()
+
+    bpy.ops.mesh.select_all(action='DESELECT')
+    for v in lips:
+        face_bm.verts[v].select = True  
+    bpy.context.object.vertex_groups.new(name="lips")
+    bpy.ops.object.vertex_group_assign()
+
+
 
 class MESH_OT_create_region_group(Operator, AddObjectHelper):
     bl_idname = "mesh.create_region_group"
@@ -892,25 +1044,32 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             lips_coord = coord[32:44]
             eye_brow_right_coord = coord[1:6]
             eye_brow_left_coord = coord[6:11]
+            eye_point = coord[20:32]
             
+            model_index_to_region()
+            bpy.ops.mesh.add_eyes()
+            # distance_test(eye_point, target, "eye")
+            # distance_test(eye_brow_right_coord, target, "eye_brow_right")
+            # distance_test(eye_brow_left_coord, target, "eye_brow_left")
+
             # Adding thickness to eye brow
-            eye_brow_right_coord = eye_brow_thickness(eye_brow_right_coord, 1) # RIGHT
-            eye_brow_left_coord = eye_brow_thickness(eye_brow_left_coord, -1) # LEFT
+            # eye_brow_right_coord = eye_brow_thickness(eye_brow_right_coord, 1) # RIGHT
+            # eye_brow_left_coord = eye_brow_thickness(eye_brow_left_coord, -1) # LEFT
 
             # create vertex group of lips
             vertex_group_mouth_boundary(target)
             vertex_group_philtrum(target.data,"philtrum")
             
             # create vertex group with curved plane
-            create_curved_region_group(self, context, target, lips_coord, "lips")
-            create_curved_region_group(self, context, target, eye_brow_right_coord, "eye_brow_r")
-            create_curved_region_group(self, context, target, eye_brow_left_coord, "eye_brow_l")
+            # create_curved_region_group(self, context, target, lips_coord, "lips")
+            # create_curved_region_group(self, context, target, eye_brow_right_coord, "eye_brow_r")
+            # create_curved_region_group(self, context, target, eye_brow_left_coord, "eye_brow_l")
 
             get_vertex_top_lip(target, "lips", "lips_top")
   
             # create boundary loop of exist vertex group
-            create_boundary_loop_vg(target, "eye_brow_r", "eye_brow_r_boundary")
-            create_boundary_loop_vg(target, "eye_brow_l", "eye_brow_l_boundary")
+            # create_boundary_loop_vg(target, "eye_brow_r", "eye_brow_r_boundary")
+            # create_boundary_loop_vg(target, "eye_brow_l", "eye_brow_l_boundary")
 
             # remove back-plane of eye-brow
              
@@ -924,12 +1083,13 @@ class MESH_OT_create_region_group(Operator, AddObjectHelper):
             create_boolean_vertex_group(target,"temp2", "mustache", "temp3")
             create_boolean_vertex_group(target,"temp3", "lips", "beard")
 
-            #get_vertex_by_vg(target,"lips")
             
             # delete unusing vertex group
             remove_vertex_group(target, "temp1")
             remove_vertex_group(target, "temp2")
             remove_vertex_group(target, "temp3")
+
+            # mesh_remove_doubles(target)
             
         except IndexError:
             print("ERROR")
