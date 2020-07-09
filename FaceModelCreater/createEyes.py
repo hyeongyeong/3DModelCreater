@@ -18,6 +18,7 @@ from bpy_extras.object_utils import AddObjectHelper, object_data_add
 from mathutils import Vector
 import numpy as np
 from math import radians
+import math
 
 def delete_object(target) :
     bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -93,7 +94,7 @@ def optimize_eye_loc(coord):
     
     return eyes
 
-def add_eyeball(self, context, coord, tex):
+def add_eyeball(coord, tex):
     
     eyes = []
     
@@ -107,7 +108,8 @@ def add_eyeball(self, context, coord, tex):
     rot_dir = Vector((1,-1,1))
  
     loc = [right_loc, left_loc]
-     
+    
+
     for idx, eye in enumerate(loc) :
         bpy.ops.mesh.primitive_uv_sphere_add(location=eye)
         bpy.ops.object.shade_smooth()
@@ -289,9 +291,9 @@ def make_curved_eye_plane(self,context, coord):
 
 def duplicate_obj(target):
 
-    target.select_set(True)
-    
     bpy.ops.object.mode_set(mode = 'OBJECT')
+    target.select_set(True)
+    bpy.context.view_layer.objects.active = target
     
     bpy.ops.object.select_all(action='DESELECT')
     
@@ -349,7 +351,73 @@ def create_eye_hole(target, planes):
         vg=bpy.context.object.vertex_groups.new(name=vg_name)
         bpy.ops.object.vertex_group_assign()
         delete_object(new_obj)
-               
+
+def create_eye_lid(face, vg_name):
+
+    lid_thickness = -5
+
+    mode = bpy.context.active_object.mode
+
+    toggle_edit_mode(face)
+
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+
+    bpy.ops.object.vertex_group_set_active(group= vg_name)
+    bpy.ops.object.vertex_group_select()
+
+    bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value":(0, 0, lid_thickness)})
+
+    bpy.ops.object.vertex_group_set_active(group= vg_name)
+    bpy.ops.object.vertex_group_select()
+
+    bpy.ops.mesh.separate(type='SELECTED')
+
+    for obj in bpy.context.selected_objects:
+        if not obj == face :
+            obj.name = "eye_lid"
+
+    bpy.ops.object.mode_set(mode=mode)
+
+def eye_index_to_region(target):
+    eyes = [170, 171, 172, 173, 174, 175, 177, 179, 180, 181, 191, 395, 396, 397, 603, 604, 605, 606, 607, 608, 610, 612, 613, 614, 624, 809, 810, 811, 1213,
+    1214, 1333, 1335, 1388, 1389, 1407, 1409, 1418, 1419, 1446, 1447, 1454, 1455, 1462, 1463, 1496, 1497, 1596, 1597, 1647, 1705, 2636, 2638, 2660, 2661, 2663, 2664,
+    2913, 2915, 2918, 2919, 2928, 2930, 2981, 2985, 3022, 3023, 3024, 3025, 3026, 3027, 3034, 3035, 3062, 3063, 3064, 3065, 3092, 3093, 3094, 3095, 3130,3132, 3160,
+    3161, 3180, 3181, 3183, 3184, 3201, 3203]
+
+    eye_right = [603,604,605,606,607,608,610,612,613,614,624,809,810,811,1214,1335,1389,1409,1419,1447,1455,1463,1497,1597,1705,2638,2663,2664,2918,2919,2930,2985,
+    3025,3026,3027,3035,3064,3065,3094,3095,3132,3161,3183,3184,3203]
+    eye_left = [170,171,172,173,174,175,177,179,180,181,191,395,396,397,1213,1333,1388,1407,1418,1446,1454,1462,1496,1596,1647,2636,2660,2661,2913,2915,2928,2981,3022,3023,3024,
+    3034,3062,3063,3092,3093,3130,3160,3180,3181,3201]
+
+    bm = toggle_edit_mode(target)
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+
+    for f in eye_right:
+        bm.verts[f].select = True
+    
+    bpy.context.object.vertex_groups.new(name="eye_right_boundary")
+    bpy.ops.object.vertex_group_assign()
+
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+   
+    for f in eye_left:
+        bm.verts[f].select = True
+    
+    bpy.context.object.vertex_groups.new(name="eye_left_boundary")
+    bpy.ops.object.vertex_group_assign()
+
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+
+    bpy.ops.object.vertex_group_set_active(group= "eye_right_boundary")
+    bpy.ops.object.vertex_group_select()
+    bpy.ops.object.vertex_group_set_active(group= "eye_left_boundary")
+    bpy.ops.object.vertex_group_select()
+    
+    bpy.ops.mesh.delete(type='FACE')
+    
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+
 class MESH_OT_add_eyes(Operator, AddObjectHelper):
     """Create a new Mesh Object"""
     bl_idname = "mesh.add_eyes"
@@ -362,6 +430,7 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
         try :
             # TODO : Error output when multiple targets
             bpy.context.scene.cursor.location = (0,0,0)
+            bpy.ops.object.mode_set(mode = 'OBJECT')
             planes = []
             landmark_point_file_path = bpy.context.scene['file_path']['point']
             eye_texture_path = bpy.context.scene['file_path']['eye_tex']
@@ -374,10 +443,15 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
 
             planes = make_curved_eye_plane(self, context, eye_point)
             
-            # create_eye_hole(target, planes)
             create_eye_hole(target, planes)
 
-            add_eyeball(self, context, eye_point , eye_texture_path)
+            # eye_index_to_region(target)
+
+            add_eyeball(eye_point , eye_texture_path)
+
+            create_eye_lid(target, "eye_left_boundary")
+            create_eye_lid(target, "eye_right_boundary")
+
             
         except IndexError:
             print("Please select target face mesh!")

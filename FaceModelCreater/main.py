@@ -63,8 +63,9 @@ class step_one(bpy.types.Operator):
         
         store_boundary_loop(face)
 
-        bpy.ops.mesh.add_eyes()
         bpy.ops.mesh.create_region_group()
+        
+        
         
         ##### make philtrum
         bpy.ops.mesh.create_philtrum()
