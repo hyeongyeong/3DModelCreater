@@ -1009,13 +1009,13 @@ def model_index_to_region():
     bpy.ops.mesh.select_all(action='DESELECT')
     for v in eye_brow_right_index:
         face_bm.verts[v].select = True  
-    bpy.context.object.vertex_groups.new(name="eye_brow_right")
+    bpy.context.object.vertex_groups.new(name="eye_brow_r")
     bpy.ops.object.vertex_group_assign()
 
     bpy.ops.mesh.select_all(action='DESELECT')
     for v in eye_brow_left_index:
         face_bm.verts[v].select = True  
-    bpy.context.object.vertex_groups.new(name="eye_brow_left")
+    bpy.context.object.vertex_groups.new(name="eye_brow_l")
     bpy.ops.object.vertex_group_assign()
 
     bpy.ops.mesh.select_all(action='DESELECT')
