@@ -7,10 +7,12 @@ class MESH_OT_apply_texturing(bpy.types.Operator):
 
     
     def execute(self, context):
-       texturing(self,context)
-       return {'FINISHED'}
+        control_face_roughness = 0.7 # 0.5 ~ 1 
+        control_face_skin_condition = 0.1
+        texturing(self,context, control_face_roughness, control_face_skin_condition)
+        return {'FINISHED'}
 
-def create_face_group(context,operator,group_name):
+def create_face_group(context,operator,group_name, control_face_roughness, control_face_skin_condition):
          ###############################
         bpy.context.scene.use_nodes = True
         
@@ -44,14 +46,14 @@ def create_face_group(context,operator,group_name):
         Math_wrinkle.inputs[0].default_value = 0
         Math_wrinkle.location = (1500,0)
         Bump = Face_Skin_Group.nodes.new('ShaderNodeBump')
-        Bump.inputs[0].default_value = 0.1
+        Bump.inputs[0].default_value = control_face_skin_condition
         Bump.inputs[1].default_value = 0.1
         Bump.location = (1800,150)
         ColorRamp_roughness = Face_Skin_Group.nodes.new('ShaderNodeValToRGB')
         ColorRamp_roughness.color_ramp.elements[0].color = (1, 1, 1, 1)
         ColorRamp_roughness.color_ramp.elements[0].position = 0
         ColorRamp_roughness.color_ramp.elements[1].color = (0, 0, 0, 1)
-        ColorRamp_roughness.color_ramp.elements[1].position = 0.7
+        ColorRamp_roughness.color_ramp.elements[1].position = control_face_roughness
         ColorRamp_roughness.location = (1800,450)
         UVMap_face = Face_Skin_Group.nodes.new('ShaderNodeUVMap')
         UVMap_face.uv_map = "UVMap"
@@ -84,7 +86,7 @@ def create_face_group(context,operator,group_name):
 
         return Face_Skin_Group
 
-def texturing(self,context):
+def texturing(self,context, control_face_roughness, control_face_skin_condition):
     objs = bpy.context.scene['my_obj']['ply'].data 
     f_face= open(bpy.context.scene['file_path']['skin_tex'],"r")
     face_R = []
@@ -155,7 +157,7 @@ def texturing(self,context):
     bpy.context.object.active_material = material_body
 
     ##############face ####################
-    group_face_texture=create_face_group(self,context,'face_texture')
+    group_face_texture=create_face_group(self,context,'face_texture', control_face_roughness, control_face_skin_condition)
     material_face = bpy.data.materials.new("Face")
     material_face.use_nodes = True
     face_texture_group =  material_face.node_tree.nodes.new('ShaderNodeGroup')
