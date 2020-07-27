@@ -115,7 +115,7 @@ class step_two(bpy.types.Operator):
         align_eye(eye1, align_matrix)
         align_eye(eye2, align_matrix)
         
-        merge(face, body_objs)
+        merge(face, body_objs, align_matrix)
         
         bpy.ops.mesh.apply_texturing()
         return {'FINISHED'}

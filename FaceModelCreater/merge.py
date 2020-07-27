@@ -165,7 +165,7 @@ def store_boundary_loop(objs):
             vert.append(v.index)
     vg.add(vert, 1.0, 'ADD')
 
-def merge(objs, body_objs):
+def merge(objs, body_objs, matrix):
     #extract boundary edge loop
     new_objs = duplicate_obj(objs)
     bpy.ops.object.mode_set(mode = "OBJECT")
@@ -301,17 +301,19 @@ def merge(objs, body_objs):
         will_modified[i].normal = extrude_normal[i]
 
 
-    model = os.getcwd() + "/external/intermediate/nose.obj"
-    data = os.getcwd() + "/external/intermediate/man_nose.obj"
-    save_path = os.getcwd() + "/external/intermediate/result.csv"
-    icp = os.getcwd() + "/external/icp/icp_methods"
-    subprocess.call(icp +' '+model+' '+data+' '+save_path, shell=True)
-    matrix_world = genfromtxt(save_path, delimiter=',')
+    # model = os.getcwd() + "/external/intermediate/nose.obj"
+    # data = os.getcwd() + "/external/intermediate/man_nose.obj"
+    # save_path = os.getcwd() + "/external/intermediate/result.csv"
+    # icp = os.getcwd() + "/external/icp/icp_methods"
+    # subprocess.call(icp +' '+model+' '+data+' '+save_path, shell=True)
+    # matrix_world = genfromtxt(save_path, delimiter=',')
 
-    matrix = ((math.floor(matrix_world[0][0]*1000)/1000, 0,0,matrix_world[3][0]),
-    (0,math.floor(matrix_world[1][1]*1000)/1000,0,matrix_world[3][1]),
-    (0,0,math.floor(matrix_world[2][2]*1000)/1000,matrix_world[3][2]),
-    (matrix_world[0][3],-matrix_world[2][3],matrix_world[1][3],matrix_world[3][3]))
+    matrix = ((math.floor(matrix[0][0]*1000)/1000, 0,0,matrix[0][3]),
+    (0,math.floor(matrix[1][1]*1000)/1000,0,matrix[1][3]),
+    (0,0,math.floor(matrix[2][2]*1000)/1000,matrix[2][3]),
+    (matrix[3][0],matrix[3][1],matrix[3][2],matrix[3][3]))
+
+  
 
 
     objs.matrix_world = matrix
