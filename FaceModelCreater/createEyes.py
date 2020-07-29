@@ -67,8 +67,8 @@ def add_eyeball(coord, tex):
     eye_col = []
 
     bpy.ops.object.mode_set(mode = 'OBJECT') 
-    bpy.ops.wm.append(filename="eye", directory=os.getcwd() + "/input/eye/eye.blend\\Collection\\", link = False)
-    bpy.ops.wm.append(filename="eye", directory=os.getcwd() + "/input/eye/eye.blend\\Collection\\", link = False)
+    bpy.ops.wm.append(filename="eye", directory=os.getcwd() + tex + "\\Collection\\", link = False)
+    bpy.ops.wm.append(filename="eye", directory=os.getcwd() + tex + "\\Collection\\", link = False)
     
     eye_col.append(bpy.data.collections.get('eye'))
     eye_col.append(bpy.data.collections.get('eye.001'))
@@ -396,7 +396,7 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
             bpy.ops.object.mode_set(mode = 'OBJECT')
             planes = []
             landmark_point_file_path = bpy.context.scene['file_path']['point']
-            eye_texture_path = bpy.context.scene['file_path']['eye_tex']
+            eye_texture_path = "/input/eye/eye.blend"
 
             target = bpy.context.scene['my_obj']['ply']
             
@@ -410,7 +410,7 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
 
             # eye_index_to_region(target)
 
-            add_eyeball(eye_point , eye_texture_path)
+            add_eyeball(eye_point,eye_texture_path)
 
             create_eye_lid(target, "eye_left_boundary")
             create_eye_lid(target, "eye_right_boundary")
@@ -418,7 +418,7 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
             toggle_edit_mode(target)
             bpy.ops.mesh.select_all(action = 'SELECT')
             bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
-
+            
             set_eye_color("dark_black")
             
         except IndexError:
