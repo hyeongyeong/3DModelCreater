@@ -52,8 +52,6 @@ def optimize_eye_loc(coord):
 
 def add_eyeball(coord, tex):
     
-    eyes = []
-    
     op = optimize_eye_loc(coord)
     
     right_loc = op[0]
@@ -86,6 +84,7 @@ def add_eyeball(coord, tex):
                     obj.rotation_euler = rotation_v * rot_dir
     bpy.context.scene.eevee.use_ssr = True
     bpy.context.scene.eevee.use_ssr_refraction = True
+
 
 def apply_boolean(target , plane, operation, delete) :
     
@@ -413,6 +412,10 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
 
             create_eye_lid(target, "eye_left_boundary")
             create_eye_lid(target, "eye_right_boundary")
+
+            toggle_edit_mode(target)
+            bpy.ops.mesh.select_all(action = 'SELECT')
+            bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
 
             
         except IndexError:
