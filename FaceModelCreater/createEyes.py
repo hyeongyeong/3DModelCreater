@@ -21,6 +21,8 @@ from math import radians
 import math
 import os
 
+from .modifyEyes import set_eye_color 
+
 def delete_object(target) :
     bpy.ops.object.mode_set(mode = 'OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
@@ -417,6 +419,7 @@ class MESH_OT_add_eyes(Operator, AddObjectHelper):
             bpy.ops.mesh.select_all(action = 'SELECT')
             bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
 
+            set_eye_color("dark_black")
             
         except IndexError:
             print("Please select target face mesh!")
