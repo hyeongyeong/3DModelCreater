@@ -83,12 +83,16 @@ class step_one(bpy.types.Operator):
         tongue = bpy.data.objects["tongue_lowres_Mesh.001"]
         teeth1 = bpy.data.objects["Lower_jaw_teeth_Lower_jaw_teeth.001"]
         teeth2 = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]
+        eye_lid1 = bpy.data.objects["eye_lid"]
+        eye_lid2 = bpy.data.objects["eye_lid.001"]
         eye1 = bpy.data.objects["Sphere"]
         eye2 = bpy.data.objects["Sphere.001"]
         reset_transform(face)
         reset_transform(tongue)
         reset_transform(teeth1)
         reset_transform(teeth2)
+        reset_transform(eye_lid1)
+        reset_transform(eye_lid2)
         return {'FINISHED'}
 
 
@@ -104,6 +108,8 @@ class step_two(bpy.types.Operator):
         teeth2 = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]
         eye1 = bpy.data.objects["Sphere"]
         eye2 = bpy.data.objects["Sphere.001"]
+        eye_lid1 = bpy.data.objects["eye_lid"]
+        eye_lid2 = bpy.data.objects["eye_lid.001"]
         body_objs = bpy.data.objects[body_file_name]
         align_matrix = icp()
         align(face,align_matrix)
@@ -114,6 +120,8 @@ class step_two(bpy.types.Operator):
         # align(eye2, align_matrix)
         align_eye(eye1, align_matrix)
         align_eye(eye2, align_matrix)
+        align_eye(eye_lid1, align_matrix)
+        align_eye(eye_lid2, align_matrix)
         
         merge(face, body_objs, align_matrix)
         
@@ -173,10 +181,14 @@ class main_Operator(bpy.types.Operator):
         teeth2 = bpy.data.objects["Upper_jaw_teeth_Upper_jaw_teeth.001"]
         eye1 = bpy.data.objects["Sphere"]
         eye2 = bpy.data.objects["Sphere.001"]
+        eye_lid1 = bpy.data.objects["eye_lid"]
+        eye_lid2 = bpy.data.objects["eye_lid.001"]
         reset_transform(face)
         reset_transform(tongue)
         reset_transform(teeth1)
         reset_transform(teeth2)
+        reset_transform(eye_lid1)
+        reset_transform(eye_lid2)
         # reset_transform(eye1)
         # reset_transform(eye2)
         
@@ -189,7 +201,8 @@ class main_Operator(bpy.types.Operator):
         # align(eye2, align_matrix)
         align_eye(eye1, align_matrix)
         align_eye(eye2, align_matrix)
-        
+        align(eye_lid1, align_matrix)
+        align(eye_lid2, align_matrix)
         merge(face, body_objs)
         
         bpy.ops.mesh.apply_texturing()
