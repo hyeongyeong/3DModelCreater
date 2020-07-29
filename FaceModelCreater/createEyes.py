@@ -19,6 +19,7 @@ from mathutils import Vector
 import numpy as np
 from math import radians
 import math
+import os
 
 def delete_object(target) :
     bpy.ops.object.mode_set(mode = 'OBJECT')
@@ -26,52 +27,7 @@ def delete_object(target) :
     target.select_set(True) # Blender 2.8x
     bpy.ops.object.delete() 
 
-def make_eye_material(path):
-    
-    loc = Vector((500,0))
-    difference = Vector((300,0))
-    
-    mat_name = "eye_material"
-    
-    mat = bpy.data.materials.new(mat_name)
-    mat.use_nodes = True    
-    nodes = mat.node_tree.nodes
-    
-    # handle default 
-    nodes.remove(nodes.get('Principled BSDF'))
-    material_output = nodes.get('Material Output')
-    
-    # make new nodes
-    diffuse = nodes.new('ShaderNodeBsdfDiffuse')
-    hue = nodes.new('ShaderNodeHueSaturation')
-    texImage = nodes.new('ShaderNodeTexImage')
-    texcoord = nodes.new('ShaderNodeTexCoord')
-    
-    node_pool = [diffuse, hue, texImage, texcoord]
-    
-    # edit location of nodes
-    material_output.location = loc
-    for p in node_pool:
-        loc = loc - difference
-        p.location = loc
-    
-    # load text file to texImage
-    try :
-        image = bpy.data.images.load(path)
-        texImage.image = image
-    except :
-        raise NameError("Cannot load image %s" % path)
-        
-    # link nodes
-    link = mat.node_tree.links
-    link.new(texcoord.outputs[0], texImage.inputs[0])
-    link.new(texImage.outputs[0],hue.inputs[4])
-    link.new(hue.outputs[0],diffuse.inputs[0])
-    link.new(material_output.inputs[0], diffuse.outputs[0])
-    
-    return mat
 
-def apply_eye_texture(eye_meshes, tex):
     
     mat = make_eye_material(tex)
     
@@ -84,7 +40,7 @@ def optimize_eye_loc(coord):
     coord_right = coord[0:6] # 2
     coord_left = coord[6:12] # 1
 
-    scale = Vector((19,19,19))
+    scale = Vector((15,15,15))
     rot = Vector((radians(15), radians(5), 0))
 
     right = (coord_right[0].x  + scale.x , coord_right[2].y, (coord_right[2].z + coord_right[4].z)/2 - scale.z )
@@ -108,22 +64,28 @@ def add_eyeball(coord, tex):
     rot_dir = Vector((1,-1,1))
  
     loc = [right_loc, left_loc]
+    eye_col = []
+
+    bpy.ops.object.mode_set(mode = 'OBJECT') 
+    bpy.ops.wm.append(filename="eye", directory=os.getcwd() + "/input/eye/eye.blend\\Collection\\", link = False)
+    bpy.ops.wm.append(filename="eye", directory=os.getcwd() + "/input/eye/eye.blend\\Collection\\", link = False)
     
+    eye_col.append(bpy.data.collections.get('eye'))
+    eye_col.append(bpy.data.collections.get('eye.001'))
 
-    for idx, eye in enumerate(loc) :
-        bpy.ops.mesh.primitive_uv_sphere_add(location=eye)
-        bpy.ops.object.shade_smooth()
-        ball = bpy.context.selected_objects[0]
-        ball.scale = scale_v
-        eyes.append(ball)
-
-        if idx :   
-            ball.rotation_euler = rotation_v 
-        else :
-            ball.rotation_euler = rotation_v * rot_dir
-
-    
-    apply_eye_texture(eyes, tex)
+    for idx, e in enumerate(eye_col) :
+        bpy.ops.object.select_all(action = 'DESELECT')
+        if e :
+            for obj in e.objects:
+                obj.select_set(True)
+                obj.location = loc[idx]
+                obj.scale = scale_v
+                if idx :   
+                    obj.rotation_euler = rotation_v 
+                else :
+                    obj.rotation_euler = rotation_v * rot_dir
+    bpy.context.scene.eevee.use_ssr = True
+    bpy.context.scene.eevee.use_ssr_refraction = True
 
 def apply_boolean(target , plane, operation, delete) :
     

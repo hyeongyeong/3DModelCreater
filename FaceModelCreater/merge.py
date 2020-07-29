@@ -48,6 +48,10 @@ def align_eye(objs, matrix):
     bpy.ops.object.select_all(action='DESELECT')
     objs.select_set(True)
     bpy.context.view_layer.objects.active = objs
+    matrix = ((math.floor(matrix[0][0]*1000)/1000, 0,0,matrix[0][3]),
+    (0,math.floor(matrix[1][1]*1000)/1000,0,matrix[1][3]),
+    (0,0,math.floor(matrix[2][2]*1000)/1000,matrix[2][3]),
+    (matrix[3][0],matrix[3][1],matrix[3][2],matrix[3][3]))
     matrix = Matrix(matrix)
     print(matrix)
     print(objs.location)
@@ -82,6 +86,11 @@ def align(objs, matrix):
     bpy.ops.object.select_all(action='DESELECT')
     objs.select_set(True)
     bpy.context.view_layer.objects.active = objs
+
+    matrix = ((math.floor(matrix[0][0]*1000)/1000, 0,0,matrix[0][3]),
+    (0,math.floor(matrix[1][1]*1000)/1000,0,matrix[1][3]),
+    (0,0,math.floor(matrix[2][2]*1000)/1000,matrix[2][3]),
+    (matrix[3][0],matrix[3][1],matrix[3][2],matrix[3][3]))
     
     # matrix = ((math.floor(matrix_world[0][0]*1000)/1000, matrix_world[1][0],matrix_world[2][0],matrix_world[3][0]),
     # (matrix_world[0][1],math.floor(matrix_world[1][1]*1000)/1000,matrix_world[2][1],matrix_world[3][1]),
