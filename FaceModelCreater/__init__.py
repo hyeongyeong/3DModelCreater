@@ -35,8 +35,23 @@ from . hairStyler import Hair_styler
 from . button import MY_BUTTON_OT_Button, step_four, step_three
 from . createPhiltrum import MESH_OT_create_philtrum
 from . uvmap import apply_UVMap
+from . customize import Custom_Properties, back_to_default, OBJECT_PT_CustomPanel, OBJECT_PT_CustomPanel_Specular,Run_Customize_specular, OBJECT_PT_CustomPanel_Skin_Condition, Run_Customize_Skin_Condition, OBJECT_PT_CustomPanel_Face_Flush, Run_Customize_Face_Flush
+from bpy.props import PointerProperty
 
-classes = (main_Operator, step_one, step_two, step_three, step_four, Model_PT_Panel,MY_BUTTON_OT_Button, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, nostril, MESH_OT_apply_texturing, Hair_styler,MESH_OT_create_philtrum, apply_UVMap)
+classes = (main_Operator, step_one, step_two, step_three, step_four, Model_PT_Panel,MY_BUTTON_OT_Button, MESH_OT_add_eyes, MESH_OT_create_region_group, mouth_creation, nostril, MESH_OT_apply_texturing, Hair_styler,MESH_OT_create_philtrum, apply_UVMap, Custom_Properties, back_to_default, OBJECT_PT_CustomPanel, OBJECT_PT_CustomPanel_Specular,Run_Customize_specular, OBJECT_PT_CustomPanel_Skin_Condition, Run_Customize_Skin_Condition, OBJECT_PT_CustomPanel_Face_Flush, Run_Customize_Face_Flush)
 
 
-register,unregister = bpy.utils.register_classes_factory(classes)
+def register():
+    from bpy.utils import register_class
+    for cls in classes:
+        register_class(cls)
+    bpy.types.Scene.my_tool = PointerProperty(type=Custom_Properties)
+
+def unregister():
+    from bpy.utils import unregister_class
+    for cls in reversed(classes):
+        unregister_class(cls)
+    del bpy.types.Scene.my_tool
+
+
+#register,unregister = bpy.utils.register_classes_factory(classes)
